@@ -16,13 +16,19 @@ public class UIMainMenu : MonoBehaviour
 
     void OnClickStatusBtn()
     {
-        statusBtn.gameObject.SetActive(false);
-        invBtn.gameObject.SetActive(false);
+        DeactiveButtons();
+        // 스테이터스 창 활성화
     }
 
     void OnClickInvBtn()
     {
-
+        DeactiveButtons();
+        // 인벤 창 활성화
+    }
+    void DeactiveButtons()
+    {
+        statusBtn.gameObject.SetActive(false);
+        invBtn.gameObject.SetActive(false);
     }
 
     void ReActiveButtons()
