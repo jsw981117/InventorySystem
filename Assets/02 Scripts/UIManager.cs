@@ -5,7 +5,6 @@ using UnityEngine;
 public class UIManager : MonoBehaviour
 {
     private static UIManager _instance;
-
     public static UIManager Instance
     {
         get
@@ -23,9 +22,28 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    [SerializeField] UIMainMenu mainMenu;
-    [SerializeField] UIStatus status;
-    [SerializeField] UIInventory inventory;
+    // 프라이빗 필드
+    [SerializeField] private UIMainMenu _mainMenu;
+    [SerializeField] private UIStatus _status;
+    [SerializeField] private UIInventory _inventory;
+
+    public UIMainMenu MainMenu
+    {
+        get { return _mainMenu; }
+        private set { _mainMenu = value; }
+    }
+
+    public UIStatus Status
+    {
+        get { return _status; }
+        private set { _status = value; }
+    }
+
+    public UIInventory Inventory
+    {
+        get { return _inventory; }
+        private set { _inventory = value; }
+    }
 
     private void Awake()
     {
@@ -38,5 +56,15 @@ public class UIManager : MonoBehaviour
 
         _instance = this;
         DontDestroyOnLoad(gameObject); // 씬 전환시에도 유지
+
+        // 필요한 컴포넌트가 없으면 찾기
+        if (_mainMenu == null)
+            _mainMenu = FindObjectOfType<UIMainMenu>();
+
+        if (_status == null)
+            _status = FindObjectOfType<UIStatus>();
+
+        if (_inventory == null)
+            _inventory = FindObjectOfType<UIInventory>();
     }
 }
