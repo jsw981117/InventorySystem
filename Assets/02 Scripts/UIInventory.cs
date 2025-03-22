@@ -6,7 +6,9 @@ using UnityEngine.UI;
 public class UIInventory : MonoBehaviour
 {
     [SerializeField] private Button backBtn;
-    
+    [SerializeField] private UISlot slot;
+    List<UISlot> slots = new List<UISlot>();
+
 
     void Start()
     {

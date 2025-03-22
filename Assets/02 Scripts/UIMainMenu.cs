@@ -23,6 +23,8 @@ public class UIMainMenu : MonoBehaviour
         {
             UpdateCharacterInfo(GameManager.Instance.PlayerCharacter);
         }
+
+        ReActiveButtons();
     }
 
     void OnClickStatusBtn()
