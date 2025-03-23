@@ -14,11 +14,12 @@ public class Character : MonoBehaviour
     [SerializeField] private int defense;
     [SerializeField][Range(0, 1)] private float criticalChance;
 
-    // 인벤토리 추가
-    private List<Item> inventory = new List<Item>();
+    // 인벤토리 시스템 - Item 대신 InventoryItem 사용
+    private List<InventoryItem> inventory = new List<InventoryItem>();
     private const int MAX_INVENTORY_SIZE = 20;
 
-    // 장착 중인 아이템
+    // 장착 아이템 - 여기서는 Item 사용 (InventoryItem이 아님)
+    // 장착한 아이템은 수량 개념이 없기 때문
     private Item equippedWeapon;
     private Item equippedArmor;
     private Item equippedAccessory;
@@ -60,7 +61,7 @@ public class Character : MonoBehaviour
     }
 
     // 인벤토리 프로퍼티
-    public List<Item> Inventory => inventory;
+    public IReadOnlyList<InventoryItem> Inventory => inventory;
     public int InventorySize => inventory.Count;
     public bool IsInventoryFull => inventory.Count >= MAX_INVENTORY_SIZE;
 
@@ -75,11 +76,11 @@ public class Character : MonoBehaviour
         CharacterName = name;
         Level = lvl;
         Description = desc;
-        AttackPower = atk;
-        HealthPoints = hp;
-        Defense = def;
-        CriticalChance = critChance;
-        
+        attackPower = atk; // 프로퍼티 대신 필드 직접 수정
+        healthPoints = hp;
+        defense = def;
+        criticalChance = critChance;
+
         // 인벤토리 초기화
         inventory.Clear();
         equippedWeapon = null;
@@ -87,21 +88,92 @@ public class Character : MonoBehaviour
         equippedAccessory = null;
     }
 
-    // 아이템 추가 메서드
-    public bool AddItem(Item item)
+    // ItemData를 통해 직접 아이템 추가
+    public bool AddItem(ItemData itemData, int amount = 1)
     {
-        // 인벤토리가 가득 찼는지 확인
         if (IsInventoryFull)
         {
             Debug.LogWarning("인벤토리가 가득 찼습니다!");
             return false;
         }
 
-        // 아이템을 인벤토리에 추가
-        inventory.Add(item);
-        Debug.Log($"{item.ItemName}을(를) 인벤토리에 추가했습니다.");
+        // 이미 같은 종류의 아이템이 있고, 중첩 가능한지 확인
+        if (itemData.IsStackable)
+        {
+            foreach (InventoryItem invItem in inventory)
+            {
+                if (invItem.Item.ItemName == itemData.ItemName && invItem.Amount < invItem.MaxStack)
+                {
+                    // 기존 아이템에 수량 추가
+                    int amountToAdd = Mathf.Min(amount, invItem.MaxStack - invItem.Amount);
+                    invItem.AddAmount(amountToAdd);
 
+                    // 추가 후 남은 수량이 있다면 새 슬롯에 추가
+                    int remaining = amount - amountToAdd;
+                    if (remaining > 0 && !IsInventoryFull)
+                    {
+                        Item newItem = new Item(itemData, remaining);
+                        InventoryItem newInvItem = new InventoryItem(newItem);
+                        inventory.Add(newInvItem);
+                    }
+
+                    return true;
+                }
+            }
+        }
+
+        // 같은 종류의 아이템이 없거나 중첩 불가능한 경우 새 슬롯에 추가
+        Item item = new Item(itemData, amount);
+        InventoryItem inventoryItem = new InventoryItem(item);
+        inventory.Add(inventoryItem);
+
+        Debug.Log($"{itemData.ItemName}을(를) 인벤토리에 추가했습니다.");
         return true;
+    }
+
+    // 기존 Item 추가 메서드 - 호환성 유지
+    public bool AddItem(Item item)
+    {
+        if (IsInventoryFull)
+        {
+            Debug.LogWarning("인벤토리가 가득 찼습니다!");
+            return false;
+        }
+
+        // Item을 InventoryItem으로 변환
+        InventoryItem inventoryItem = new InventoryItem(item);
+        inventory.Add(inventoryItem);
+
+        Debug.Log($"{item.ItemName}을(를) 인벤토리에 추가했습니다.");
+        return true;
+    }
+
+    // 인벤토리에서 아이템 제거
+    public bool RemoveItem(InventoryItem inventoryItem)
+    {
+        return inventory.Remove(inventoryItem);
+    }
+
+    // 인벤토리에서 아이템 사용
+    public bool UseItem(InventoryItem inventoryItem)
+    {
+        if (inventoryItem == null || inventoryItem.IsEmpty())
+            return false;
+
+        Item item = inventoryItem.Item;
+        bool used = item.Use(this);
+
+        // 소모품이고 사용 성공했으면 개수 감소
+        if (used && item.Type == ItemData.ItemType.Consumable)
+        {
+            if (inventoryItem.RemoveAmount(1) && inventoryItem.Amount <= 0)
+            {
+                // 수량이 0이 되면 인벤토리에서 제거
+                RemoveItem(inventoryItem);
+            }
+        }
+
+        return used;
     }
 
     // 아이템 장착 메서드
@@ -116,40 +188,43 @@ public class Character : MonoBehaviour
         // 아이템 타입에 따라 적절한 슬롯에 장착
         switch (item.Type)
         {
-            case Item.ItemType.Weapon:
+            case ItemData.ItemType.Weapon:
                 // 이미 무기를 장착 중이면 인벤토리로 돌려보냄
                 if (equippedWeapon != null)
                 {
-                    inventory.Add(equippedWeapon);
+                    AddItem(equippedWeapon);
                     Debug.Log($"{equippedWeapon.ItemName}을(를) 해제했습니다.");
                 }
 
                 equippedWeapon = item;
-                inventory.Remove(item); // 인벤토리에서 제거
+
+                // 인벤토리에서 아이템 찾아 제거
+                RemoveItemFromInventory(item);
+
                 Debug.Log($"{item.ItemName}을(를) 장착했습니다.");
                 break;
 
-            case Item.ItemType.Armor:
+            case ItemData.ItemType.Armor:
                 if (equippedArmor != null)
                 {
-                    inventory.Add(equippedArmor);
+                    AddItem(equippedArmor);
                     Debug.Log($"{equippedArmor.ItemName}을(를) 해제했습니다.");
                 }
 
                 equippedArmor = item;
-                inventory.Remove(item);
+                RemoveItemFromInventory(item);
                 Debug.Log($"{item.ItemName}을(를) 장착했습니다.");
                 break;
 
-            case Item.ItemType.Accessory:
+            case ItemData.ItemType.Accessory:
                 if (equippedAccessory != null)
                 {
-                    inventory.Add(equippedAccessory);
+                    AddItem(equippedAccessory);
                     Debug.Log($"{equippedAccessory.ItemName}을(를) 해제했습니다.");
                 }
 
                 equippedAccessory = item;
-                inventory.Remove(item);
+                RemoveItemFromInventory(item);
                 Debug.Log($"{item.ItemName}을(를) 장착했습니다.");
                 break;
 
@@ -158,21 +233,34 @@ public class Character : MonoBehaviour
                 return;
         }
 
-        // UI 업데이트 로직 (옵션)
+        // UI 업데이트 로직
         if (GameManager.Instance != null)
         {
             GameManager.Instance.UpdateUI();
         }
     }
 
+    // 인벤토리에서 특정 아이템 제거 (내부 메서드)
+    private void RemoveItemFromInventory(Item item)
+    {
+        for (int i = 0; i < inventory.Count; i++)
+        {
+            if (inventory[i].Item == item)
+            {
+                inventory.RemoveAt(i);
+                return;
+            }
+        }
+    }
+
     // 아이템 해제 메서드
-    public void UnEquip(Item.ItemType itemType)
+    public void UnEquip(ItemData.ItemType itemType)
     {
         Item itemToUnequip = null;
 
         switch (itemType)
         {
-            case Item.ItemType.Weapon:
+            case ItemData.ItemType.Weapon:
                 if (equippedWeapon != null)
                 {
                     itemToUnequip = equippedWeapon;
@@ -180,7 +268,7 @@ public class Character : MonoBehaviour
                 }
                 break;
 
-            case Item.ItemType.Armor:
+            case ItemData.ItemType.Armor:
                 if (equippedArmor != null)
                 {
                     itemToUnequip = equippedArmor;
@@ -188,7 +276,7 @@ public class Character : MonoBehaviour
                 }
                 break;
 
-            case Item.ItemType.Accessory:
+            case ItemData.ItemType.Accessory:
                 if (equippedAccessory != null)
                 {
                     itemToUnequip = equippedAccessory;
@@ -202,7 +290,7 @@ public class Character : MonoBehaviour
             // 인벤토리가 가득 차지 않았으면 인벤토리에 추가
             if (!IsInventoryFull)
             {
-                inventory.Add(itemToUnequip);
+                AddItem(itemToUnequip);
                 Debug.Log($"{itemToUnequip.ItemName}을(를) 해제하고 인벤토리에 보관했습니다.");
             }
             else
@@ -211,7 +299,7 @@ public class Character : MonoBehaviour
                 // 여기에 아이템 드롭 로직을 추가할 수 있음
             }
 
-            // UI 업데이트 로직 (옵션)
+            // UI 업데이트 로직
             if (GameManager.Instance != null)
             {
                 GameManager.Instance.UpdateUI();
@@ -221,5 +309,13 @@ public class Character : MonoBehaviour
         {
             Debug.LogWarning($"해제할 {itemType} 아이템이 없습니다.");
         }
+    }
+
+    // 인벤토리에서 인덱스로 아이템 찾기
+    public InventoryItem GetInventoryItemAt(int index)
+    {
+        if (index >= 0 && index < inventory.Count)
+            return inventory[index];
+        return null;
     }
 }

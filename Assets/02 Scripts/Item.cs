@@ -2,79 +2,98 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "New Item", menuName = "Inventory/Item")]
-public class Item : ScriptableObject
+[System.Serializable]
+public class Item
 {
-    public enum ItemType
-    {
-        Weapon,
-        Armor,
-        Accessory,
-        Consumable,
-        Quest,
-        ETC
-    }
+    [SerializeField] private ItemData itemData; // ItemData SO 참조
+    [SerializeField] private int amount = 1; // 아이템 수량
 
-    [Header("기본 정보")]
-    [SerializeField] private string itemName;
-    [SerializeField] private Sprite itemSprite;
-    [SerializeField] private string description;
-    [SerializeField] private ItemType itemType;
-    [SerializeField] private int itemValue; // 판매 가격
-    [SerializeField] private bool isStackable; // 중첩 가능 여부
-    [SerializeField] private int maxStack = 1; // 최대 중첩 수량
-
-    [Header("장비 스탯")]
-    [SerializeField] private int attackBonus;
-    [SerializeField] private int defenseBonus;
-    [SerializeField] private int healthBonus;
-    [SerializeField] private float criticalChanceBonus;
-
-    [Header("소모품 효과")]
-    [SerializeField] private int healAmount;
-
-    // 프로퍼티
-    public string ItemName => itemName;
-    public Sprite ItemSprite => itemSprite;
-    public string Description => description;
-    public ItemType Type => itemType;
-    public int ItemValue => itemValue;
-    public bool IsStackable => isStackable;
-    public int MaxStack => maxStack;
+    // 프로퍼티 - 모든 데이터는 ItemData에서 가져옴
+    public string ItemName => itemData != null ? itemData.ItemName : "Unknown Item";
+    public Sprite ItemSprite => itemData != null ? itemData.ItemSprite : null;
+    public string Description => itemData != null ? itemData.Description : "";
+    public ItemData.ItemType Type => itemData != null ? itemData.Type : ItemData.ItemType.ETC;
+    public int ItemValue => itemData != null ? itemData.ItemValue : 0;
+    public bool IsStackable => itemData != null && itemData.IsStackable;
+    public int MaxStack => itemData != null ? itemData.MaxStack : 1;
 
     // 장비 스탯 프로퍼티
-    public int AttackBonus => attackBonus;
-    public int DefenseBonus => defenseBonus;
-    public int HealthBonus => healthBonus;
-    public float CriticalChanceBonus => criticalChanceBonus;
+    public int AttackBonus => itemData != null ? itemData.AttackBonus : 0;
+    public int DefenseBonus => itemData != null ? itemData.DefenseBonus : 0;
+    public int HealthBonus => itemData != null ? itemData.HealthBonus : 0;
+    public float CriticalChanceBonus => itemData != null ? itemData.CriticalChanceBonus : 0f;
 
     // 소모품 효과 프로퍼티
-    public int HealAmount => healAmount;
+    public int HealAmount => itemData != null ? itemData.HealAmount : 0;
+
+    // 수량 프로퍼티
+    public int Amount => amount;
+
+    // 생성자
+    public Item(ItemData data, int amount = 1)
+    {
+        this.itemData = data;
+        this.amount = Mathf.Min(amount, data != null && data.IsStackable ? data.MaxStack : 1);
+    }
+
+    // 수량 증가 메서드
+    public bool AddAmount(int amountToAdd)
+    {
+        if (!IsStackable)
+            return false;
+
+        if (amount + amountToAdd <= MaxStack)
+        {
+            amount += amountToAdd;
+            return true;
+        }
+        return false;
+    }
+
+    // 수량 감소 메서드
+    public bool RemoveAmount(int amountToRemove)
+    {
+        if (amount >= amountToRemove)
+        {
+            amount -= amountToRemove;
+            return true;
+        }
+        return false;
+    }
+
+    // 아이템이 비었는지 확인
+    public bool IsEmpty()
+    {
+        return itemData == null || amount <= 0;
+    }
 
     // 아이템 사용 메서드
     public virtual bool Use(Character character)
     {
-        switch (itemType)
+        if (itemData == null)
+            return false;
+
+        switch (Type)
         {
-            case ItemType.Consumable:
+            case ItemData.ItemType.Consumable:
                 // 소모품 사용 로직
-                if (healAmount > 0)
+                if (HealAmount > 0)
                 {
-                    character.HealthPoints += healAmount;
-                    Debug.Log($"{character.CharacterName}이(가) {itemName}을(를) 사용하여 체력을 {healAmount} 회복했습니다.");
+                    character.HealthPoints += HealAmount;
+                    Debug.Log($"{character.CharacterName}이(가) {ItemName}을(를) 사용하여 체력을 {HealAmount} 회복했습니다.");
                     return true;
                 }
                 break;
 
-            case ItemType.Weapon:
-            case ItemType.Armor:
-            case ItemType.Accessory:
+            case ItemData.ItemType.Weapon:
+            case ItemData.ItemType.Armor:
+            case ItemData.ItemType.Accessory:
                 // 장비 아이템 장착
                 character.Equip(this);
                 return true;
 
             default:
-                Debug.Log($"{itemName}은(는) 사용할 수 없는 아이템입니다.");
+                Debug.Log($"{ItemName}은(는) 사용할 수 없는 아이템입니다.");
                 break;
         }
 
@@ -84,18 +103,21 @@ public class Item : ScriptableObject
     // 아이템 정보 문자열 반환
     public override string ToString()
     {
-        string info = $"{itemName} - {description}\n";
+        if (itemData == null)
+            return "빈 아이템";
 
-        if (itemType == ItemType.Weapon || itemType == ItemType.Armor || itemType == ItemType.Accessory)
+        string info = $"{ItemName} - {Description}\n";
+
+        if (Type == ItemData.ItemType.Weapon || Type == ItemData.ItemType.Armor || Type == ItemData.ItemType.Accessory)
         {
-            if (attackBonus != 0) info += $"공격력: +{attackBonus} ";
-            if (defenseBonus != 0) info += $"방어력: +{defenseBonus} ";
-            if (healthBonus != 0) info += $"체력: +{healthBonus} ";
-            if (criticalChanceBonus != 0) info += $"치명타: +{criticalChanceBonus * 100}% ";
+            if (AttackBonus != 0) info += $"공격력: +{AttackBonus} ";
+            if (DefenseBonus != 0) info += $"방어력: +{DefenseBonus} ";
+            if (HealthBonus != 0) info += $"체력: +{HealthBonus} ";
+            if (CriticalChanceBonus != 0) info += $"치명타: +{CriticalChanceBonus * 100}% ";
         }
-        else if (itemType == ItemType.Consumable && healAmount > 0)
+        else if (Type == ItemData.ItemType.Consumable && HealAmount > 0)
         {
-            info += $"회복량: {healAmount}";
+            info += $"회복량: {HealAmount}";
         }
 
         return info;
