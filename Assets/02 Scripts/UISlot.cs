@@ -1,19 +1,16 @@
 using System.Collections;
 using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
-public class UISlot : MonoBehaviour
+public class UISlot : MonoBehaviour, IPointerClickHandler
 {
     [SerializeField] private Image itemImage; // 아이템 이미지
-    [SerializeField] private Image countBox;
-    [SerializeField] private TextMeshProUGUI countText; // 아이템 개수 텍스트
+    [SerializeField] private Text countText; // 아이템 개수 텍스트
 
     private int slotIndex; // 슬롯 인덱스
-    private Item currentItem; // 현재 아이템 (Item 클래스 구현 필요)
-    private int itemCount = 0; // 아이템 개수
+    private InventoryItem inventoryItem; // 인벤토리 아이템 참조
 
     // 슬롯 초기화 메서드
     public void InitSlot(int index)
@@ -25,8 +22,7 @@ public class UISlot : MonoBehaviour
     // 슬롯 비우기 메서드
     public void ClearSlot()
     {
-        currentItem = null;
-        itemCount = 0;
+        inventoryItem = null;
 
         if (itemImage != null)
         {
@@ -42,31 +38,31 @@ public class UISlot : MonoBehaviour
     }
 
     // 아이템 설정 메서드
-    public void SetItem(Item item, int count = 1)
+    public void SetItem(InventoryItem invItem)
     {
-        currentItem = item;
-        itemCount = count;
-
+        inventoryItem = invItem;
         UpdateUI();
     }
 
     // UI 업데이트 메서드
     public void UpdateUI()
     {
-        if (currentItem != null)
+        if (inventoryItem != null && !inventoryItem.IsEmpty())
         {
-            if (itemImage != null)
+            Item item = inventoryItem.Item;
+
+            if (itemImage != null && item != null)
             {
                 itemImage.gameObject.SetActive(true);
-                itemImage.sprite = currentItem.ItemSprite; // Item 클래스에 ItemSprite 프로퍼티가 있다고 가정
+                itemImage.sprite = item.ItemSprite;
             }
 
             if (countText != null)
             {
-                if (itemCount > 1)
+                if (inventoryItem.Amount > 1)
                 {
                     countText.gameObject.SetActive(true);
-                    countText.text = itemCount.ToString();
+                    countText.text = inventoryItem.Amount.ToString();
                 }
                 else
                 {
@@ -83,19 +79,25 @@ public class UISlot : MonoBehaviour
     // 슬롯이 비어있는지 확인하는 메서드
     public bool IsEmpty()
     {
-        return currentItem == null;
+        return inventoryItem == null || inventoryItem.IsEmpty();
     }
 
-    // 현재 아이템 가져오기
+    // 인벤토리 아이템 가져오기
+    public InventoryItem GetInventoryItem()
+    {
+        return inventoryItem;
+    }
+
+    // 아이템 가져오기
     public Item GetItem()
     {
-        return currentItem;
+        return inventoryItem != null ? inventoryItem.Item : null;
     }
 
     // 아이템 개수 가져오기
-    public int GetItemCount()
+    public int GetItemAmount()
     {
-        return itemCount;
+        return inventoryItem != null ? inventoryItem.Amount : 0;
     }
 
     // 슬롯 인덱스 가져오기
@@ -107,26 +109,50 @@ public class UISlot : MonoBehaviour
     // 클릭 이벤트 처리
     public void OnPointerClick(PointerEventData eventData)
     {
+        if (IsEmpty())
+            return;
+
         // 좌클릭 - 아이템 선택 또는 사용
         if (eventData.button == PointerEventData.InputButton.Left)
         {
-            if (currentItem != null)
+            Item item = GetItem();
+            if (item != null)
             {
-                Debug.Log($"슬롯 {slotIndex}의 아이템 선택: {currentItem.ItemName}"); // Item 클래스에 ItemName 프로퍼티가 있다고 가정
+                Debug.Log($"슬롯 {slotIndex}의 아이템 선택: {item.ItemName}");
 
-                // 아이템 사용 로직 (필요시 구현)
-                // currentItem.Use();
+                // 아이템 사용 로직
+                if (GameManager.Instance != null && GameManager.Instance.PlayerCharacter != null)
+                {
+                    // 아이템 사용
+                    bool used = item.Use(GameManager.Instance.PlayerCharacter);
+
+                    // 소모품이고 사용 성공했으면 개수 감소
+                    if (used && item.Type == Item.ItemType.Consumable)
+                    {
+                        if (inventoryItem.RemoveAmount(1) && inventoryItem.Amount <= 0)
+                        {
+                            // 수량이 0이 되면 슬롯 비우기
+                            ClearSlot();
+                        }
+                        else
+                        {
+                            // 수량 업데이트
+                            UpdateUI();
+                        }
+                    }
+                }
             }
         }
         // 우클릭 - 아이템 정보 표시
         else if (eventData.button == PointerEventData.InputButton.Right)
         {
-            if (currentItem != null)
+            Item item = GetItem();
+            if (item != null)
             {
-                Debug.Log($"슬롯 {slotIndex}의 아이템 정보: {currentItem.ItemName}");
+                Debug.Log($"슬롯 {slotIndex}의 아이템 정보: {item.ToString()}");
 
                 // 아이템 정보창 표시 로직 (필요시 구현)
-                // UIManager.Instance.ShowItemInfo(currentItem);
+                // UIManager.Instance.ShowItemInfo(item);
             }
         }
     }
