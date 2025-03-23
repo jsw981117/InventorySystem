@@ -30,8 +30,6 @@ public class ItemData : ScriptableObject
     [SerializeField] private int healthBonus;
     [SerializeField] private float criticalChanceBonus;
 
-    [Header("소모품 효과")]
-    [SerializeField] private int healAmount;
 
     // 프로퍼티
     public string ItemName => itemName;
@@ -46,5 +44,4 @@ public class ItemData : ScriptableObject
     public int DefenseBonus => defenseBonus;
     public int HealthBonus => healthBonus;
     public float CriticalChanceBonus => criticalChanceBonus;
-    public int HealAmount => healAmount;
 }

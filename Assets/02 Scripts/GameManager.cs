@@ -26,12 +26,6 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] private Character _playerCharacter;
 
-    // ItemData 에셋 참조 (인스펙터에서 할당)
-    [Header("기본 아이템")]
-    [SerializeField] private ItemData ironSwordData;
-    [SerializeField] private ItemData leatherArmorData;
-    [SerializeField] private ItemData smallPotionData;
-
     public Character PlayerCharacter
     {
         get { return _playerCharacter; }
@@ -72,45 +66,14 @@ public class GameManager : MonoBehaviour
             _playerCharacter = characterObj.AddComponent<Character>();
         }
 
-        // 캐릭터 기본 데이터 설정
+        // 캐릭터 기본 데이터 설정 (아이템 초기화는 Character 내부에서 처리)
         _playerCharacter.SetCharacterData(job, name, level, description, attackPower, healthPoints, defense, criticalChance);
 
-        // 기본 아이템 지급
-        GiveStartingItems();
-
+        // UI 업데이트
         UpdateUIWithCharacter(_playerCharacter);
     }
 
-    // 기본 아이템 지급
-    private void GiveStartingItems()
-    {
-        // 기본 무기 지급
-        if (ironSwordData != null)
-        {
-            Item sword = new Item(ironSwordData);
-            _playerCharacter.AddItem(sword);
-            _playerCharacter.Equip(sword);
-        }
-
-        // 기본 방어구 지급
-        if (leatherArmorData != null)
-        {
-            Item armor = new Item(leatherArmorData);
-            _playerCharacter.AddItem(armor);
-            _playerCharacter.Equip(armor);
-        }
-
-        // 소모품 지급
-        if (smallPotionData != null)
-        {
-            // 소모품은 아이템 데이터와 수량 지정 (3개)
-            _playerCharacter.AddItem(smallPotionData, 3);
-        }
-
-        Debug.Log("기본 아이템 지급 완료");
-    }
-
-    // 캐릭터 정보를 UI에 업데이트
+    // UI 업데이트 메서드
     private void UpdateUIWithCharacter(Character character)
     {
         if (UIManager.Instance != null)
@@ -147,7 +110,7 @@ public class GameManager : MonoBehaviour
                 UIManager.Instance.Inventory.AddItemToSlot(_playerCharacter.Inventory[i].Item);
             }
 
-            // 장착 아이템 표시 (필요시 구현)
+            // 장착 아이템 표시 (추가 구현 가능)
         }
     }
 

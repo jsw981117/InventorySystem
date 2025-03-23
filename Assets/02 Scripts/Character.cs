@@ -14,16 +14,23 @@ public class Character : MonoBehaviour
     [SerializeField] private int defense;
     [SerializeField][Range(0, 1)] private float criticalChance;
 
-    // 인벤토리 시스템 - Item 대신 InventoryItem 사용
+    // 기본 장비 아이템 데이터 참조
+    [Header("Basic Items")]
+    [SerializeField] private ItemData startingSwordData;
+    [SerializeField] private ItemData startingArmorData;
+    [SerializeField] private ItemData healingPotionData;
+    [SerializeField] private int startingPotionCount = 3;
+
+    // 인벤토리 시스템
     private List<InventoryItem> inventory = new List<InventoryItem>();
     private const int MAX_INVENTORY_SIZE = 20;
 
-    // 장착 아이템 - 여기서는 Item 사용 (InventoryItem이 아님)
-    // 장착한 아이템은 수량 개념이 없기 때문
+    // 장착 아이템
     private Item equippedWeapon;
     private Item equippedArmor;
     private Item equippedAccessory;
 
+    // 프로퍼티
     public string CharacterJob { get => characterJob; set => characterJob = value; }
     public string CharacterName { get => characterName; set => characterName = value; }
     public int Level { get => level; set => level = value; }
@@ -70,22 +77,57 @@ public class Character : MonoBehaviour
     public Item EquippedArmor => equippedArmor;
     public Item EquippedAccessory => equippedAccessory;
 
+    private void Awake()
+    {
+        // 초기화 로직 수행
+        InitializeCharacter();
+    }
+
+    private void InitializeCharacter()
+    {
+        // 기본 아이템 지급
+        if (startingSwordData != null && startingArmorData != null)
+        {
+            // 인벤토리 초기화
+            inventory.Clear();
+            equippedWeapon = null;
+            equippedArmor = null;
+            equippedAccessory = null;
+
+            // 기본 무기 생성 및 장착
+            Item sword = new Item(startingSwordData);
+            AddItem(sword);
+            Equip(sword);
+
+            // 기본 방어구 생성 및 장착
+            Item armor = new Item(startingArmorData);
+            AddItem(armor);
+            Equip(armor);
+
+            // 소모품 지급
+            if (healingPotionData != null && startingPotionCount > 0)
+            {
+                AddItem(healingPotionData, startingPotionCount);
+            }
+
+            // UI 업데이트 필요
+            UpdateUI();
+        }
+    }
+
     public void SetCharacterData(string job, string name, int lvl, string desc, int atk, int hp, int def, float critChance)
     {
         CharacterJob = job;
         CharacterName = name;
         Level = lvl;
         Description = desc;
-        attackPower = atk; // 프로퍼티 대신 필드 직접 수정
+        attackPower = atk;
         healthPoints = hp;
         defense = def;
         criticalChance = critChance;
 
-        // 인벤토리 초기화
-        inventory.Clear();
-        equippedWeapon = null;
-        equippedArmor = null;
-        equippedAccessory = null;
+        // 캐릭터 설정 후 아이템 초기화
+        InitializeCharacter();
     }
 
     // ItemData를 통해 직접 아이템 추가
@@ -117,6 +159,7 @@ public class Character : MonoBehaviour
                         inventory.Add(newInvItem);
                     }
 
+                    UpdateUI();
                     return true;
                 }
             }
@@ -128,10 +171,11 @@ public class Character : MonoBehaviour
         inventory.Add(inventoryItem);
 
         Debug.Log($"{itemData.ItemName}을(를) 인벤토리에 추가했습니다.");
+        UpdateUI();
         return true;
     }
 
-    // 기존 Item 추가 메서드 - 호환성 유지
+    // 기존 Item 추가 메서드
     public bool AddItem(Item item)
     {
         if (IsInventoryFull)
@@ -145,13 +189,16 @@ public class Character : MonoBehaviour
         inventory.Add(inventoryItem);
 
         Debug.Log($"{item.ItemName}을(를) 인벤토리에 추가했습니다.");
+        UpdateUI();
         return true;
     }
 
     // 인벤토리에서 아이템 제거
     public bool RemoveItem(InventoryItem inventoryItem)
     {
-        return inventory.Remove(inventoryItem);
+        bool result = inventory.Remove(inventoryItem);
+        if (result) UpdateUI();
+        return result;
     }
 
     // 인벤토리에서 아이템 사용
@@ -173,6 +220,7 @@ public class Character : MonoBehaviour
             }
         }
 
+        UpdateUI();
         return used;
     }
 
@@ -233,11 +281,7 @@ public class Character : MonoBehaviour
                 return;
         }
 
-        // UI 업데이트 로직
-        if (GameManager.Instance != null)
-        {
-            GameManager.Instance.UpdateUI();
-        }
+        UpdateUI();
     }
 
     // 인벤토리에서 특정 아이템 제거 (내부 메서드)
@@ -299,11 +343,7 @@ public class Character : MonoBehaviour
                 // 여기에 아이템 드롭 로직을 추가할 수 있음
             }
 
-            // UI 업데이트 로직
-            if (GameManager.Instance != null)
-            {
-                GameManager.Instance.UpdateUI();
-            }
+            UpdateUI();
         }
         else
         {
@@ -317,5 +357,15 @@ public class Character : MonoBehaviour
         if (index >= 0 && index < inventory.Count)
             return inventory[index];
         return null;
+    }
+
+    // UI 업데이트 메서드
+    private void UpdateUI()
+    {
+        // GameManager를 통해 UI 업데이트 요청
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.UpdateUI();
+        }
     }
 }

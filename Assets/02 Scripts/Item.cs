@@ -23,8 +23,6 @@ public class Item
     public int HealthBonus => itemData != null ? itemData.HealthBonus : 0;
     public float CriticalChanceBonus => itemData != null ? itemData.CriticalChanceBonus : 0f;
 
-    // 소모품 효과 프로퍼티
-    public int HealAmount => itemData != null ? itemData.HealAmount : 0;
 
     // 수량 프로퍼티
     public int Amount => amount;
@@ -75,16 +73,6 @@ public class Item
 
         switch (Type)
         {
-            case ItemData.ItemType.Consumable:
-                // 소모품 사용 로직
-                if (HealAmount > 0)
-                {
-                    character.HealthPoints += HealAmount;
-                    Debug.Log($"{character.CharacterName}이(가) {ItemName}을(를) 사용하여 체력을 {HealAmount} 회복했습니다.");
-                    return true;
-                }
-                break;
-
             case ItemData.ItemType.Weapon:
             case ItemData.ItemType.Armor:
             case ItemData.ItemType.Accessory:
@@ -114,10 +102,6 @@ public class Item
             if (DefenseBonus != 0) info += $"방어력: +{DefenseBonus} ";
             if (HealthBonus != 0) info += $"체력: +{HealthBonus} ";
             if (CriticalChanceBonus != 0) info += $"치명타: +{CriticalChanceBonus * 100}% ";
-        }
-        else if (Type == ItemData.ItemType.Consumable && HealAmount > 0)
-        {
-            info += $"회복량: {HealAmount}";
         }
 
         return info;
