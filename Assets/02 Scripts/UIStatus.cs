@@ -27,7 +27,7 @@ public class UIStatus : MonoBehaviour
         UIManager.Instance.MainMenu.ReActiveButtons();
     }
 
-    public void UpdateStatus()
+    public void UpdateStatus()               
     {
         gameObject.SetActive(true);
 

@@ -66,47 +66,46 @@ public class UIInventory : MonoBehaviour
         }
 
         // Content 크기 조정 (필요시)
-        AdjustContentSize();
 
         Debug.Log($"인벤토리 초기화 완료: {slotCount}개의 슬롯 생성됨");
     }
 
-    // Content 크기 조정 메서드
-    private void AdjustContentSize()
-    {
-        if (slotsParent != null)
-        {
-            // Content에 RectTransform 있는지 확인
-            RectTransform contentRect = slotsParent.GetComponent<RectTransform>();
-            if (contentRect != null)
-            {
-                // GridLayoutGroup이 있으면 그 설정을 활용
-                GridLayoutGroup gridLayout = slotsParent.GetComponent<GridLayoutGroup>();
-                if (gridLayout != null)
-                {
-                    // 한 줄에 들어갈 슬롯 개수 계산
-                    float contentWidth = contentRect.rect.width;
-                    float cellWidth = gridLayout.cellSize.x + gridLayout.spacing.x;
-                    int slotsPerRow = Mathf.Max(1, Mathf.FloorToInt(contentWidth / cellWidth));
+    //// Content 크기 조정 메서드
+    //private void AdjustContentSize()
+    //{
+    //    if (slotsParent != null)
+    //    {
+    //        // Content에 RectTransform 있는지 확인
+    //        RectTransform contentRect = slotsParent.GetComponent<RectTransform>();
+    //        if (contentRect != null)
+    //        {
+    //            // GridLayoutGroup이 있으면 그 설정을 활용
+    //            GridLayoutGroup gridLayout = slotsParent.GetComponent<GridLayoutGroup>();
+    //            if (gridLayout != null)
+    //            {
+    //                // 한 줄에 들어갈 슬롯 개수 계산
+    //                float contentWidth = contentRect.rect.width;
+    //                float cellWidth = gridLayout.cellSize.x + gridLayout.spacing.x;
+    //                int slotsPerRow = Mathf.Max(1, Mathf.FloorToInt(contentWidth / cellWidth));
 
-                    // 필요한 행 수 계산
-                    int rowsNeeded = Mathf.CeilToInt((float)slotCount / slotsPerRow);
+    //                // 필요한 행 수 계산
+    //                int rowsNeeded = Mathf.CeilToInt((float)slotCount / slotsPerRow);
 
-                    // Content 높이 계산 및 설정
-                    float cellHeight = gridLayout.cellSize.y + gridLayout.spacing.y;
-                    float contentHeight = rowsNeeded * cellHeight + gridLayout.padding.top + gridLayout.padding.bottom;
+    //                // Content 높이 계산 및 설정
+    //                float cellHeight = gridLayout.cellSize.y + gridLayout.spacing.y;
+    //                float contentHeight = rowsNeeded * cellHeight + gridLayout.padding.top + gridLayout.padding.bottom;
 
-                    // 최소 높이 (스크롤뷰 높이)보다 작지 않게 설정
-                    RectTransform scrollRectTransform = scrollView?.GetComponent<RectTransform>();
-                    float minHeight = scrollRectTransform != null ? scrollRectTransform.rect.height : 100f;
-                    contentHeight = Mathf.Max(contentHeight, minHeight);
+    //                // 최소 높이 (스크롤뷰 높이)보다 작지 않게 설정
+    //                RectTransform scrollRectTransform = scrollView?.GetComponent<RectTransform>();
+    //                float minHeight = scrollRectTransform != null ? scrollRectTransform.rect.height : 100f;
+    //                contentHeight = Mathf.Max(contentHeight, minHeight);
 
-                    // Content 높이 설정
-                    contentRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, contentHeight);
-                }
-            }
-        }
-    }
+    //                // Content 높이 설정
+    //                contentRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, contentHeight);
+    //            }
+    //        }
+    //    }
+    //}
 
     // 슬롯 정리 메서드
     public void ClearSlots()

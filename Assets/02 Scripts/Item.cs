@@ -2,8 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[System.Serializable]
-public class Item : MonoBehaviour
+[CreateAssetMenu(fileName = "New Item", menuName = "Inventory/Item")]
+public class Item : ScriptableObject
 {
     public enum ItemType
     {
@@ -15,6 +15,7 @@ public class Item : MonoBehaviour
         ETC
     }
 
+    [Header("기본 정보")]
     [SerializeField] private string itemName;
     [SerializeField] private Sprite itemSprite;
     [SerializeField] private string description;
@@ -23,13 +24,13 @@ public class Item : MonoBehaviour
     [SerializeField] private bool isStackable; // 중첩 가능 여부
     [SerializeField] private int maxStack = 1; // 최대 중첩 수량
 
-    // 장비 아이템 관련 스탯
+    [Header("장비 스탯")]
     [SerializeField] private int attackBonus;
     [SerializeField] private int defenseBonus;
     [SerializeField] private int healthBonus;
     [SerializeField] private float criticalChanceBonus;
 
-    // 소모 아이템 관련 효과
+    [Header("소모품 효과")]
     [SerializeField] private int healAmount;
 
     // 프로퍼티
@@ -50,37 +51,7 @@ public class Item : MonoBehaviour
     // 소모품 효과 프로퍼티
     public int HealAmount => healAmount;
 
-    // 생성자 - 기본 아이템 정보
-    public Item(string name, Sprite sprite, string desc, ItemType type, int value, bool stackable = false, int maxStack = 1)
-    {
-        this.itemName = name;
-        this.itemSprite = sprite;
-        this.description = desc;
-        this.itemType = type;
-        this.itemValue = value;
-        this.isStackable = stackable;
-        this.maxStack = maxStack;
-    }
-
-    // 생성자 - 장비 아이템
-    public Item(string name, Sprite sprite, string desc, ItemType type, int value,
-                int attackBonus, int defenseBonus, int healthBonus, float criticalChanceBonus)
-        : this(name, sprite, desc, type, value)
-    {
-        this.attackBonus = attackBonus;
-        this.defenseBonus = defenseBonus;
-        this.healthBonus = healthBonus;
-        this.criticalChanceBonus = criticalChanceBonus;
-    }
-
-    // 생성자 - 소모 아이템
-    public Item(string name, Sprite sprite, string desc, int value, int healAmount, bool stackable = true, int maxStack = 99)
-        : this(name, sprite, desc, ItemType.Consumable, value, stackable, maxStack)
-    {
-        this.healAmount = healAmount;
-    }
-
-    // 아이템 사용 메서드 (오버라이드 가능한 가상 메서드)
+    // 아이템 사용 메서드
     public virtual bool Use(Character character)
     {
         switch (itemType)

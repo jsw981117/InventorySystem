@@ -8,6 +8,7 @@ using UnityEngine.UI;
 public class UISlot : MonoBehaviour
 {
     [SerializeField] private Image itemImage; // 아이템 이미지
+    [SerializeField] private Image countBox;
     [SerializeField] private TextMeshProUGUI countText; // 아이템 개수 텍스트
 
     private int slotIndex; // 슬롯 인덱스
