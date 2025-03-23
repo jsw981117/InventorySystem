@@ -200,7 +200,7 @@ public class GameManager : MonoBehaviour
             // 캐릭터 인벤토리의 각 아이템을 UI 슬롯에 표시
             foreach (Item item in _playerCharacter.Inventory)
             {
-                //UIManager.Instance.Inventory.AddItemToSlot(item);
+                UIManager.Instance.Inventory.AddItemToSlot(item);
             }
 
             // 장착 아이템 표시 (필요시 구현)
