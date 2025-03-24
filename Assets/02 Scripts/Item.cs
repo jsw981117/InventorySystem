@@ -12,8 +12,7 @@ public class Item
     public string ItemName => itemData != null ? itemData.ItemName : "Unknown Item";
     public Sprite ItemSprite => itemData != null ? itemData.ItemSprite : null;
     public string Description => itemData != null ? itemData.Description : "";
-    public ItemData.ItemType Type => itemData != null ? itemData.Type : ItemData.ItemType.ETC;
-    public int ItemValue => itemData != null ? itemData.ItemValue : 0;
+    public ItemData.ItemType Type => itemData != null ? itemData.Type : ItemData.ItemType.Material;
     public bool IsStackable => itemData != null && itemData.IsStackable;
     public int MaxStack => itemData != null ? itemData.MaxStack : 1;
 
@@ -22,7 +21,6 @@ public class Item
     public int DefenseBonus => itemData != null ? itemData.DefenseBonus : 0;
     public int HealthBonus => itemData != null ? itemData.HealthBonus : 0;
     public float CriticalChanceBonus => itemData != null ? itemData.CriticalChanceBonus : 0f;
-
 
     // 수량 프로퍼티
     public int Amount => amount;
@@ -65,7 +63,7 @@ public class Item
         return itemData == null || amount <= 0;
     }
 
-    // 아이템 사용 메서드
+    // 아이템 사용 메서드 - 장비 아이템만 처리
     public virtual bool Use(Character character)
     {
         if (itemData == null)
@@ -81,7 +79,7 @@ public class Item
                 return true;
 
             default:
-                Debug.Log($"{ItemName}은(는) 사용할 수 없는 아이템입니다.");
+                Debug.Log($"{ItemName}은(는) 장착할 수 없는 아이템입니다.");
                 break;
         }
 

@@ -10,9 +10,7 @@ public class ItemData : ScriptableObject
         Weapon,
         Armor,
         Accessory,
-        Consumable,
-        Quest,
-        ETC
+        Material,
     }
 
     [Header("기본 정보")]
@@ -20,7 +18,6 @@ public class ItemData : ScriptableObject
     [SerializeField] private Sprite itemSprite;
     [SerializeField] private string description;
     [SerializeField] private ItemType itemType;
-    [SerializeField] private int itemValue; // 판매 가격
     [SerializeField] private bool isStackable; // 중첩 가능 여부
     [SerializeField] private int maxStack = 1; // 최대 중첩 수량
 
@@ -36,7 +33,6 @@ public class ItemData : ScriptableObject
     public Sprite ItemSprite => itemSprite;
     public string Description => description;
     public ItemType Type => itemType;
-    public int ItemValue => itemValue;
     public bool IsStackable => isStackable;
     public int MaxStack => maxStack;
 

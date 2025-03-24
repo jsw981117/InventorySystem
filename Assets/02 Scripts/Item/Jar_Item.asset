@@ -10,17 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4726f8199c3c316419fc948daad980f7, type: 3}
-  m_Name: New Item
+  m_Name: Jar_Item
   m_EditorClassIdentifier: 
-  itemName: 
-  itemSprite: {fileID: 0}
-  description: 
-  itemType: 0
+  itemName: Jar
+  itemSprite: {fileID: 21300000, guid: 9015316fff758964fa98a8bb9aa8bbfb, type: 3}
+  description: "\uD56D\uC544\uB9AC"
+  itemType: 3
   itemValue: 0
-  isStackable: 0
-  maxStack: 1
+  isStackable: 1
+  maxStack: 99
   attackBonus: 0
   defenseBonus: 0
   healthBonus: 0
   criticalChanceBonus: 0
-  healAmount: 0

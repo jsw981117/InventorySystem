@@ -1,11 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Events;
-
-// 랜덤박스 결과를 전달하기 위한 이벤트 클래스
-[System.Serializable]
-public class RandomBoxResultEvent : UnityEvent<string> { }
 
 public class RandomBox : MonoBehaviour
 {
@@ -18,9 +13,6 @@ public class RandomBox : MonoBehaviour
     [Header("랜덤박스 설정")]
     [SerializeField] private int minItemCount = 1; // 최소 획득 아이템 개수
     [SerializeField] private int maxItemCount = 3; // 최대 획득 아이템 개수
-
-    // 결과 이벤트 - UI에서 이 이벤트를 구독하여 결과 표시
-    [HideInInspector] public RandomBoxResultEvent OnRandomBoxResult = new RandomBoxResultEvent();
 
     private void Start()
     {
@@ -37,7 +29,7 @@ public class RandomBox : MonoBehaviour
     {
         if (possibleItems.Count == 0)
         {
-            OnRandomBoxResult.Invoke("랜덤박스에 아이템이 등록되지 않았습니다.");
+            Debug.LogWarning("랜덤박스에 아이템이 등록되지 않았습니다.");
             return;
         }
 
@@ -45,36 +37,16 @@ public class RandomBox : MonoBehaviour
         Character playerCharacter = GameManager.Instance?.PlayerCharacter;
         if (playerCharacter == null)
         {
-            OnRandomBoxResult.Invoke("플레이어 캐릭터를 찾을 수 없습니다.");
-            return;
-        }
-
-        // 인벤토리 공간 확인
-        if (playerCharacter.IsInventoryFull)
-        {
-            OnRandomBoxResult.Invoke("인벤토리가 가득 찼습니다. 공간을 확보한 후 다시 시도하세요.");
+            Debug.LogError("플레이어 캐릭터를 찾을 수 없습니다.");
             return;
         }
 
         // 획득할 아이템 개수 결정
         int itemCount = Random.Range(minItemCount, maxItemCount + 1);
 
-        // 결과 메시지
-        string resultMessage = "획득한 아이템:\n";
-
-        // 획득한 아이템 목록
-        List<ItemResult> acquiredItems = new List<ItemResult>();
-
         // 지정된 개수만큼 아이템 획득
         for (int i = 0; i < itemCount; i++)
         {
-            // 인벤토리 공간 재확인
-            if (playerCharacter.IsInventoryFull)
-            {
-                resultMessage += "\n인벤토리가 가득 찼습니다.";
-                break;
-            }
-
             // 아이템 선택
             ItemData selectedItem = GetRandomItem();
 
@@ -86,20 +58,18 @@ public class RandomBox : MonoBehaviour
                 // 캐릭터에 아이템 추가
                 playerCharacter.AddItem(selectedItem, amount);
 
-                // 결과 목록에 추가
-                acquiredItems.Add(new ItemResult
-                {
-                    Item = selectedItem,
-                    Amount = amount
-                });
-
-                // 결과 메시지에 추가
-                resultMessage += $"- {selectedItem.ItemName} x{amount}\n";
+                Debug.Log($"획득: {selectedItem.ItemName} x{amount}");
+                UIManager.Instance.Inventory.UpdateInventoryUI();
             }
         }
 
-        // 결과 이벤트 발생
-        OnRandomBoxResult.Invoke(resultMessage);
+        // 인벤토리 UI 업데이트
+        if (UIManager.Instance?.Inventory != null)
+        {
+            UIManager.Instance.Inventory.RefreshInventory();
+            UIManager.Instance.Inventory.UpdateInventoryUI();
+
+        }
     }
 
     // 가중치에 따라 랜덤 아이템 선택
@@ -139,12 +109,4 @@ public class RandomBox : MonoBehaviour
         // 기본 반환 (첫 번째 아이템)
         return possibleItems[0];
     }
-}
-
-// 아이템 획득 결과를 저장하는 클래스
-[System.Serializable]
-public class ItemResult
-{
-    public ItemData Item;
-    public int Amount;
 }

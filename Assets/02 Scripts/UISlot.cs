@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using TMPro;
 
 public class UISlot : MonoBehaviour, IPointerClickHandler
 {
     [SerializeField] private Image itemImage; // 아이템 이미지
-    [SerializeField] private Text countText; // 아이템 개수 텍스트
+    [SerializeField] private TextMeshProUGUI countText; // 아이템 개수 텍스트
 
     private int slotIndex; // 슬롯 인덱스
     private Item item; // 아이템 참조
@@ -34,6 +35,7 @@ public class UISlot : MonoBehaviour, IPointerClickHandler
         {
             countText.gameObject.SetActive(false);
             countText.text = "";
+            Debug.Log("슬롯 비었음");
         }
     }
 
@@ -104,40 +106,25 @@ public class UISlot : MonoBehaviour, IPointerClickHandler
         if (IsEmpty())
             return;
 
-        // 좌클릭 - 아이템 선택 또는 사용
+        // 좌클릭 - 아이템 장착/해제
         if (eventData.button == PointerEventData.InputButton.Left)
         {
             Debug.Log($"슬롯 {slotIndex}의 아이템 선택: {item.ItemName}");
 
-            // 아이템 사용 로직
-            if (GameManager.Instance != null && GameManager.Instance.PlayerCharacter != null)
+            // 장비 아이템인 경우에만 장착 가능
+            if (GameManager.Instance != null && GameManager.Instance.PlayerCharacter != null &&
+                (item.Type == ItemData.ItemType.Weapon ||
+                 item.Type == ItemData.ItemType.Armor ||
+                 item.Type == ItemData.ItemType.Accessory))
             {
-                // 아이템 사용
-                bool used = item.Use(GameManager.Instance.PlayerCharacter);
-
-                // 소모품이고 사용 성공했으면 개수 감소
-                if (used && item.Type == ItemData.ItemType.Consumable)
-                {
-                    if (item.RemoveAmount(1) && item.Amount <= 0)
-                    {
-                        // 수량이 0이 되면 슬롯 비우기
-                        ClearSlot();
-                    }
-                    else
-                    {
-                        // 수량 업데이트
-                        UpdateUI();
-                    }
-                }
+                // 아이템 장착
+                item.Use(GameManager.Instance.PlayerCharacter);
             }
         }
         // 우클릭 - 아이템 정보 표시
         else if (eventData.button == PointerEventData.InputButton.Right)
         {
             Debug.Log($"슬롯 {slotIndex}의 아이템 정보: {item.ToString()}");
-
-            // 아이템 정보창 표시 로직 (필요시 구현)
-            // UIManager.Instance.ShowItemInfo(item);
         }
     }
 }

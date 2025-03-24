@@ -102,15 +102,8 @@ public class GameManager : MonoBehaviour
     {
         if (UIManager.Instance != null && UIManager.Instance.Inventory != null && _playerCharacter != null)
         {
-            UIManager.Instance.Inventory.ClearSlots();
-
-            // 캐릭터 인벤토리의 각 아이템을 UI 슬롯에 표시
-            for (int i = 0; i < _playerCharacter.Inventory.Count; i++)
-            {
-                UIManager.Instance.Inventory.AddItemToSlot(_playerCharacter.Inventory[i].Item);
-            }
-
-            // 장착 아이템 표시 (추가 구현 가능)
+            // 슬롯 수 변경 가능성이 있으므로 전체 UI 리프레시 
+            UIManager.Instance.Inventory.RefreshInventory();
         }
     }
 

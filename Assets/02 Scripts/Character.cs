@@ -18,8 +18,8 @@ public class Character : MonoBehaviour
     [Header("Basic Items")]
     [SerializeField] private ItemData startingSwordData;
     [SerializeField] private ItemData startingArmorData;
-    [SerializeField] private ItemData healingPotionData;
-    [SerializeField] private int startingPotionCount = 3;
+    [SerializeField] private ItemData startingMaterialData; // 재료 아이템으로 변경
+    [SerializeField] private int startingMaterialCount = 5; // 재료 아이템 초기 수량
 
     // 인벤토리 시스템
     private List<InventoryItem> inventory = new List<InventoryItem>();
@@ -86,7 +86,7 @@ public class Character : MonoBehaviour
     private void InitializeCharacter()
     {
         // 기본 아이템 지급
-        if (startingSwordData != null && startingArmorData != null)
+        if (startingSwordData != null || startingArmorData != null || startingMaterialData != null)
         {
             // 인벤토리 초기화
             inventory.Clear();
@@ -95,19 +95,25 @@ public class Character : MonoBehaviour
             equippedAccessory = null;
 
             // 기본 무기 생성 및 장착
-            Item sword = new Item(startingSwordData);
-            AddItem(sword);
-            Equip(sword);
+            if (startingSwordData != null)
+            {
+                Item sword = new Item(startingSwordData);
+                AddItem(sword);
+                Equip(sword);
+            }
 
             // 기본 방어구 생성 및 장착
-            Item armor = new Item(startingArmorData);
-            AddItem(armor);
-            Equip(armor);
-
-            // 소모품 지급
-            if (healingPotionData != null && startingPotionCount > 0)
+            if (startingArmorData != null)
             {
-                AddItem(healingPotionData, startingPotionCount);
+                Item armor = new Item(startingArmorData);
+                AddItem(armor);
+                Equip(armor);
+            }
+
+            // 기본 재료 지급
+            if (startingMaterialData != null && startingMaterialCount > 0)
+            {
+                AddItem(startingMaterialData, startingMaterialCount);
             }
 
             // UI 업데이트 필요
@@ -133,7 +139,7 @@ public class Character : MonoBehaviour
     // ItemData를 통해 직접 아이템 추가
     public bool AddItem(ItemData itemData, int amount = 1)
     {
-        if (IsInventoryFull)
+        if (IsInventoryFull && !CanStackItem(itemData))
         {
             Debug.LogWarning("인벤토리가 가득 찼습니다!");
             return false;
@@ -172,7 +178,25 @@ public class Character : MonoBehaviour
 
         Debug.Log($"{itemData.ItemName}을(를) 인벤토리에 추가했습니다.");
         UpdateUI();
+        UIManager.Instance.Inventory.UpdateInventoryUI();
         return true;
+    }
+
+    // 아이템 스택 가능 여부 확인
+    private bool CanStackItem(ItemData itemData)
+    {
+        if (!itemData.IsStackable)
+            return false;
+
+        foreach (InventoryItem invItem in inventory)
+        {
+            if (invItem.Item.ItemName == itemData.ItemName && invItem.Amount < invItem.MaxStack)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     // 기존 Item 추가 메서드
@@ -201,35 +225,21 @@ public class Character : MonoBehaviour
         return result;
     }
 
-    // 인벤토리에서 아이템 사용
-    public bool UseItem(InventoryItem inventoryItem)
-    {
-        if (inventoryItem == null || inventoryItem.IsEmpty())
-            return false;
-
-        Item item = inventoryItem.Item;
-        bool used = item.Use(this);
-
-        // 소모품이고 사용 성공했으면 개수 감소
-        if (used && item.Type == ItemData.ItemType.Consumable)
-        {
-            if (inventoryItem.RemoveAmount(1) && inventoryItem.Amount <= 0)
-            {
-                // 수량이 0이 되면 인벤토리에서 제거
-                RemoveItem(inventoryItem);
-            }
-        }
-
-        UpdateUI();
-        return used;
-    }
-
     // 아이템 장착 메서드
     public void Equip(Item item)
     {
         if (item == null)
         {
             Debug.LogWarning("장착할 아이템이 없습니다.");
+            return;
+        }
+
+        // 장비 아이템만 장착 가능
+        if (item.Type != ItemData.ItemType.Weapon &&
+            item.Type != ItemData.ItemType.Armor &&
+            item.Type != ItemData.ItemType.Accessory)
+        {
+            Debug.LogWarning($"{item.ItemName}은(는) 장착할 수 없는 아이템입니다.");
             return;
         }
 
@@ -275,10 +285,6 @@ public class Character : MonoBehaviour
                 RemoveItemFromInventory(item);
                 Debug.Log($"{item.ItemName}을(를) 장착했습니다.");
                 break;
-
-            default:
-                Debug.LogWarning($"{item.ItemName}은(는) 장착할 수 없는 아이템입니다.");
-                return;
         }
 
         UpdateUI();
