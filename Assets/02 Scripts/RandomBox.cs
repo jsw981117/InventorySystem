@@ -1,12 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.Events;
+
+// 랜덤박스 결과를 전달하기 위한 이벤트 클래스
+[System.Serializable]
+public class RandomBoxResultEvent : UnityEvent<string> { }
 
 public class RandomBox : MonoBehaviour
 {
-    [SerializeField] private Button openBoxButton; // 랜덤박스 열기 버튼
-
     [Header("랜덤박스 아이템 풀")]
     [SerializeField] private List<ItemData> possibleItems = new List<ItemData>(); // 획득 가능한 아이템 목록
 
@@ -17,24 +19,11 @@ public class RandomBox : MonoBehaviour
     [SerializeField] private int minItemCount = 1; // 최소 획득 아이템 개수
     [SerializeField] private int maxItemCount = 3; // 최대 획득 아이템 개수
 
-    [Header("UI 요소")]
-    [SerializeField] private GameObject resultPanel; // 결과 패널
-    [SerializeField] private Text resultText; // 결과 텍스트
+    // 결과 이벤트 - UI에서 이 이벤트를 구독하여 결과 표시
+    [HideInInspector] public RandomBoxResultEvent OnRandomBoxResult = new RandomBoxResultEvent();
 
     private void Start()
     {
-        // 버튼 이벤트 등록
-        if (openBoxButton != null)
-        {
-            openBoxButton.onClick.AddListener(OpenRandomBox);
-        }
-
-        // 결과 패널 초기 비활성화
-        if (resultPanel != null)
-        {
-            resultPanel.SetActive(false);
-        }
-
         // 확률 리스트 크기 검사
         if (itemWeights.Count > 0 && itemWeights.Count != possibleItems.Count)
         {
@@ -48,7 +37,7 @@ public class RandomBox : MonoBehaviour
     {
         if (possibleItems.Count == 0)
         {
-            Debug.LogError("랜덤박스에 아이템이 등록되지 않았습니다.");
+            OnRandomBoxResult.Invoke("랜덤박스에 아이템이 등록되지 않았습니다.");
             return;
         }
 
@@ -56,14 +45,14 @@ public class RandomBox : MonoBehaviour
         Character playerCharacter = GameManager.Instance?.PlayerCharacter;
         if (playerCharacter == null)
         {
-            Debug.LogError("플레이어 캐릭터를 찾을 수 없습니다.");
+            OnRandomBoxResult.Invoke("플레이어 캐릭터를 찾을 수 없습니다.");
             return;
         }
 
         // 인벤토리 공간 확인
         if (playerCharacter.IsInventoryFull)
         {
-            ShowResult("인벤토리가 가득 찼습니다. 공간을 확보한 후 다시 시도하세요.");
+            OnRandomBoxResult.Invoke("인벤토리가 가득 찼습니다. 공간을 확보한 후 다시 시도하세요.");
             return;
         }
 
@@ -72,6 +61,9 @@ public class RandomBox : MonoBehaviour
 
         // 결과 메시지
         string resultMessage = "획득한 아이템:\n";
+
+        // 획득한 아이템 목록
+        List<ItemResult> acquiredItems = new List<ItemResult>();
 
         // 지정된 개수만큼 아이템 획득
         for (int i = 0; i < itemCount; i++)
@@ -94,13 +86,20 @@ public class RandomBox : MonoBehaviour
                 // 캐릭터에 아이템 추가
                 playerCharacter.AddItem(selectedItem, amount);
 
+                // 결과 목록에 추가
+                acquiredItems.Add(new ItemResult
+                {
+                    Item = selectedItem,
+                    Amount = amount
+                });
+
                 // 결과 메시지에 추가
                 resultMessage += $"- {selectedItem.ItemName} x{amount}\n";
             }
         }
 
-        // 결과 표시
-        ShowResult(resultMessage);
+        // 결과 이벤트 발생
+        OnRandomBoxResult.Invoke(resultMessage);
     }
 
     // 가중치에 따라 랜덤 아이템 선택
@@ -140,27 +139,12 @@ public class RandomBox : MonoBehaviour
         // 기본 반환 (첫 번째 아이템)
         return possibleItems[0];
     }
+}
 
-    // 결과 패널 표시
-    private void ShowResult(string message)
-    {
-        if (resultPanel != null && resultText != null)
-        {
-            resultText.text = message;
-            resultPanel.SetActive(true);
-        }
-        else
-        {
-            Debug.Log(message);
-        }
-    }
-
-    // 결과 패널 닫기
-    public void CloseResultPanel()
-    {
-        if (resultPanel != null)
-        {
-            resultPanel.SetActive(false);
-        }
-    }
+// 아이템 획득 결과를 저장하는 클래스
+[System.Serializable]
+public class ItemResult
+{
+    public ItemData Item;
+    public int Amount;
 }
