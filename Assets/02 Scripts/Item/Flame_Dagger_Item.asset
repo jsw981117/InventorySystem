@@ -10,15 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4726f8199c3c316419fc948daad980f7, type: 3}
-  m_Name: Jar_Item
+  m_Name: Flame_Dagger_Item
   m_EditorClassIdentifier: 
-  itemName: Jar
-  itemSprite: {fileID: 21300000, guid: 9015316fff758964fa98a8bb9aa8bbfb, type: 3}
-  description: "\uD56D\uC544\uB9AC"
-  itemType: 3
-  isStackable: 1
+  itemName: Flame Dagger
+  itemSprite: {fileID: 21300000, guid: 888ea8e4022eb18409c65a290d82d788, type: 3}
+  description: "\uBD88\uC758 \uB2E8"
+  itemType: 0
+  isStackable: 0
   maxStack: 99
-  attackBonus: 0
+  attackBonus: 5
   defenseBonus: 0
   healthBonus: 0
-  criticalChanceBonus: 0
+  criticalChanceBonus: 5

@@ -1750,10 +1750,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   possibleItems:
   - {fileID: 11400000, guid: fdd0c0e2c1bc14e43beb8593accf697f, type: 2}
+  - {fileID: 11400000, guid: e2605f5444a335e49b14c60428eca063, type: 2}
   itemWeights:
-  - 100
+  - 50
+  - 50
   minItemCount: 1
-  maxItemCount: 3
+  maxItemCount: 1
 --- !u!114 &632706748
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3033,6 +3035,15 @@ MonoBehaviour:
   startingArmorData: {fileID: 0}
   startingMaterialData: {fileID: 0}
   startingMaterialCount: 5
+  OnInventoryChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  OnEquipmentChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  OnStatsChanged:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!4 &1024062014
 Transform:
   m_ObjectHideFlags: 0

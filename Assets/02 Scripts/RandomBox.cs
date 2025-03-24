@@ -56,19 +56,18 @@ public class RandomBox : MonoBehaviour
                 int amount = selectedItem.IsStackable ? Random.Range(1, 4) : 1;
 
                 // 캐릭터에 아이템 추가
-                playerCharacter.AddItem(selectedItem, amount);
+                bool added = playerCharacter.AddItem(selectedItem, amount);
 
-                Debug.Log($"획득: {selectedItem.ItemName} x{amount}");
-                UIManager.Instance.Inventory.UpdateInventoryUI();
+                if (added)
+                {
+                    Debug.Log($"획득: {selectedItem.ItemName} x{amount}");
+                }
+                else
+                {
+                    Debug.LogWarning($"인벤토리가 가득 차서 {selectedItem.ItemName}을(를) 획득할 수 없습니다.");
+                    break;
+                }
             }
-        }
-
-        // 인벤토리 UI 업데이트
-        if (UIManager.Instance?.Inventory != null)
-        {
-            UIManager.Instance.Inventory.RefreshInventory();
-            UIManager.Instance.Inventory.UpdateInventoryUI();
-
         }
     }
 

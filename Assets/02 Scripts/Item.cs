@@ -22,6 +22,9 @@ public class Item
     public int HealthBonus => itemData != null ? itemData.HealthBonus : 0;
     public float CriticalChanceBonus => itemData != null ? itemData.CriticalChanceBonus : 0f;
 
+    // ItemData 직접 접근 프로퍼티
+    public ItemData Data => itemData;
+
     // 수량 프로퍼티
     public int Amount => amount;
 
@@ -63,24 +66,27 @@ public class Item
         return itemData == null || amount <= 0;
     }
 
-    // 아이템 사용 메서드 - 장비 아이템만 처리
+    // 장비 가능한 아이템인지 확인
+    public bool IsEquippable()
+    {
+        return itemData != null && (
+            Type == ItemData.ItemType.Weapon ||
+            Type == ItemData.ItemType.Armor ||
+            Type == ItemData.ItemType.Accessory
+        );
+    }
+
+    // 아이템 사용 메서드
     public virtual bool Use(Character character)
     {
         if (itemData == null)
             return false;
 
-        switch (Type)
+        if (IsEquippable() && character != null)
         {
-            case ItemData.ItemType.Weapon:
-            case ItemData.ItemType.Armor:
-            case ItemData.ItemType.Accessory:
-                // 장비 아이템 장착
-                character.Equip(this);
-                return true;
-
-            default:
-                Debug.Log($"{ItemName}은(는) 장착할 수 없는 아이템입니다.");
-                break;
+            // 장비 아이템 장착
+            character.Equip(this);
+            return true;
         }
 
         return false;
@@ -94,7 +100,7 @@ public class Item
 
         string info = $"{ItemName} - {Description}\n";
 
-        if (Type == ItemData.ItemType.Weapon || Type == ItemData.ItemType.Armor || Type == ItemData.ItemType.Accessory)
+        if (IsEquippable())
         {
             if (AttackBonus != 0) info += $"공격력: +{AttackBonus} ";
             if (DefenseBonus != 0) info += $"방어력: +{DefenseBonus} ";

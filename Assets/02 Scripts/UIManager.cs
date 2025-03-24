@@ -27,6 +27,9 @@ public class UIManager : MonoBehaviour
     [SerializeField] private UIStatus _status;
     [SerializeField] private UIInventory _inventory;
 
+    // 참조 캐싱
+    private Character playerCharacter;
+
     public UIMainMenu MainMenu
     {
         get { return _mainMenu; }
@@ -66,5 +69,110 @@ public class UIManager : MonoBehaviour
 
         if (_inventory == null)
             _inventory = FindObjectOfType<UIInventory>();
+    }
+
+    private void Start()
+    {
+        // GameManager로부터 캐릭터 참조 가져오기
+        if (GameManager.Instance != null)
+        {
+            SetPlayerCharacter(GameManager.Instance.PlayerCharacter);
+        }
+    }
+
+    // 플레이어 캐릭터 설정 및 이벤트 구독
+    public void SetPlayerCharacter(Character character)
+    {
+        if (character == null)
+            return;
+
+        // 이전 캐릭터의 이벤트 구독 해제
+        if (playerCharacter != null)
+        {
+            playerCharacter.OnInventoryChanged.RemoveListener(OnPlayerInventoryChanged);
+            playerCharacter.OnEquipmentChanged.RemoveListener(OnPlayerEquipmentChanged);
+            playerCharacter.OnStatsChanged.RemoveListener(OnPlayerStatsChanged);
+        }
+
+        // 새 캐릭터 설정
+        playerCharacter = character;
+
+        // 새 캐릭터의 이벤트 구독
+        playerCharacter.OnInventoryChanged.AddListener(OnPlayerInventoryChanged);
+        playerCharacter.OnEquipmentChanged.AddListener(OnPlayerEquipmentChanged);
+        playerCharacter.OnStatsChanged.AddListener(OnPlayerStatsChanged);
+
+        // 초기 UI 업데이트
+        UpdateAllUI();
+    }
+
+    // 인벤토리 변경 이벤트 핸들러
+    private void OnPlayerInventoryChanged(Character character)
+    {
+        if (Inventory != null && character == playerCharacter)
+        {
+            Inventory.RefreshInventory();
+        }
+    }
+
+    // 장비 변경 이벤트 핸들러
+    private void OnPlayerEquipmentChanged()
+    {
+        // 장비 UI 업데이트 (장비 슬롯 UI가 있다면)
+        // 스탯 UI 업데이트 (장비에 의한 스탯 변화 반영)
+        if (Status != null)
+        {
+            Status.UpdateCharacterInfo(playerCharacter);
+        }
+    }
+
+    // 스탯 변경 이벤트 핸들러
+    private void OnPlayerStatsChanged()
+    {
+        if (Status != null)
+        {
+            Status.UpdateCharacterInfo(playerCharacter);
+        }
+
+        if (MainMenu != null)
+        {
+            MainMenu.UpdateCharacterInfo(playerCharacter);
+        }
+    }
+
+    // 모든 UI 업데이트 (외부에서 호출 가능)
+    public void UpdateAllUI()
+    {
+        if (playerCharacter == null)
+            return;
+
+        // 메인 메뉴 업데이트
+        if (MainMenu != null)
+        {
+            MainMenu.UpdateCharacterInfo(playerCharacter);
+        }
+
+        // 스탯 UI 업데이트
+        if (Status != null)
+        {
+            Status.UpdateCharacterInfo(playerCharacter);
+        }
+
+        // 인벤토리 UI 업데이트
+        if (Inventory != null)
+        {
+            Inventory.RefreshInventory();
+        }
+    }
+
+    // 컴포넌트 제거 시 이벤트 구독 해제
+    private void OnDestroy()
+    {
+        if (playerCharacter != null)
+        {
+            playerCharacter.OnInventoryChanged.RemoveListener(OnPlayerInventoryChanged);
+            playerCharacter.OnEquipmentChanged.RemoveListener(OnPlayerEquipmentChanged);
+            playerCharacter.OnStatsChanged.RemoveListener(OnPlayerStatsChanged);
+        }
     }
 }

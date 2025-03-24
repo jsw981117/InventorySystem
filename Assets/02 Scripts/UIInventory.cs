@@ -54,7 +54,16 @@ public class UIInventory : MonoBehaviour
         Character playerCharacter = GameManager.Instance?.PlayerCharacter;
         if (playerCharacter != null)
         {
-            int itemCount = playerCharacter.InventorySize;
+            // 아이템 목록을 가져와 슬롯으로 변환
+            List<Item> characterItems = new List<Item>();
+
+            // Inventory에서 아이템 가져오기
+            foreach (var invItem in playerCharacter.Inventory)
+            {
+                characterItems.Add(invItem.Item);
+            }
+
+            int itemCount = characterItems.Count;
 
             // 최소한 빈 슬롯 하나는 표시
             if (itemCount == 0)
@@ -63,18 +72,21 @@ public class UIInventory : MonoBehaviour
             CreateSlots(itemCount);
 
             // 아이템 정보로 슬롯 채우기
-            for (int i = 0; i < playerCharacter.Inventory.Count; i++)
+            for (int i = 0; i < characterItems.Count; i++)
             {
                 if (i < slots.Count)
                 {
-                    slots[i].SetItem(playerCharacter.Inventory[i].Item);
+                    slots[i].SetItem(characterItems[i]);
                 }
             }
+
+            Debug.Log($"인벤토리 UI 초기화 완료 - 아이템 {characterItems.Count}개");
         }
         else
         {
             // 캐릭터가 없으면 기본 슬롯 5개 생성
             CreateSlots(5);
+            Debug.LogWarning("캐릭터를 찾을 수 없어 기본 슬롯 5개만 생성합니다.");
         }
     }
 
@@ -113,16 +125,20 @@ public class UIInventory : MonoBehaviour
     void OnClickBackBtn()
     {
         gameObject.SetActive(false);
-        UIManager.Instance.MainMenu.ReActiveButtons();
+        if (UIManager.Instance != null && UIManager.Instance.MainMenu != null)
+        {
+            UIManager.Instance.MainMenu.ReActiveButtons();
+        }
     }
 
     // 외부에서 접근 가능한 슬롯 리스트 프로퍼티
     public List<UISlot> Slots => slots;
 
-    // 아이템을 슬롯에 추가하는 메서드 - 비어있는 슬롯에 아이템 추가
+    // 아이템을 슬롯에 추가하는 메서드
     public bool AddItemToSlot(Item item)
     {
-        if (item == null) return false;
+        if (item == null || item.IsEmpty())
+            return false;
 
         // 빈 슬롯 찾기
         foreach (UISlot slot in slots)

@@ -43,6 +43,22 @@ public class GameManager : MonoBehaviour
         _instance = this;
         DontDestroyOnLoad(gameObject);
 
+        // 플레이어 캐릭터 설정
+        SetupPlayerCharacter();
+    }
+
+    private void Start()
+    {
+        // UIManager에 플레이어 캐릭터 참조 전달
+        if (UIManager.Instance != null && _playerCharacter != null)
+        {
+            UIManager.Instance.SetPlayerCharacter(_playerCharacter);
+        }
+    }
+
+    // 플레이어 캐릭터 설정
+    private void SetupPlayerCharacter()
+    {
         if (_playerCharacter == null)
         {
             _playerCharacter = FindObjectOfType<Character>();
@@ -58,6 +74,7 @@ public class GameManager : MonoBehaviour
         SetData("전사", "플레이어", 1, "기본 캐릭터입니다.", 10, 100, 5, 0.05f);
     }
 
+    // 캐릭터 기본 데이터 설정
     public void SetData(string job, string name, int level, string description, int attackPower, int healthPoints, int defense, float criticalChance)
     {
         if (_playerCharacter == null)
@@ -66,50 +83,13 @@ public class GameManager : MonoBehaviour
             _playerCharacter = characterObj.AddComponent<Character>();
         }
 
-        // 캐릭터 기본 데이터 설정 (아이템 초기화는 Character 내부에서 처리)
+        // 캐릭터 기본 데이터 설정
         _playerCharacter.SetCharacterData(job, name, level, description, attackPower, healthPoints, defense, criticalChance);
 
-        // UI 업데이트
-        UpdateUIWithCharacter(_playerCharacter);
-    }
-
-    // UI 업데이트 메서드
-    private void UpdateUIWithCharacter(Character character)
-    {
+        // UIManager에 캐릭터 참조 전달 (UI 업데이트는 Character의 이벤트를 통해 처리됨)
         if (UIManager.Instance != null)
         {
-            // 캐릭터 정보 UI 업데이트
-            if (UIManager.Instance.MainMenu != null)
-            {
-                UIManager.Instance.MainMenu.UpdateCharacterInfo(character);
-            }
-
-            if (UIManager.Instance.Status != null)
-            {
-                UIManager.Instance.Status.UpdateCharacterInfo(character);
-            }
-
-            // 인벤토리 UI 업데이트
-            if (UIManager.Instance.Inventory != null)
-            {
-                UpdateInventoryUI();
-            }
+            UIManager.Instance.SetPlayerCharacter(_playerCharacter);
         }
-    }
-
-    // 인벤토리 UI 업데이트
-    public void UpdateInventoryUI()
-    {
-        if (UIManager.Instance != null && UIManager.Instance.Inventory != null && _playerCharacter != null)
-        {
-            // 슬롯 수 변경 가능성이 있으므로 전체 UI 리프레시 
-            UIManager.Instance.Inventory.RefreshInventory();
-        }
-    }
-
-    // UI 업데이트 (외부에서 호출 가능)
-    public void UpdateUI()
-    {
-        UpdateUIWithCharacter(_playerCharacter);
     }
 }

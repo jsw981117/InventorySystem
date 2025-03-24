@@ -376,4 +376,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   itemImage: {fileID: 914747978275565096}
+  countBox: {fileID: 1974821239711145411}
   countText: {fileID: 8249996882173837778}
