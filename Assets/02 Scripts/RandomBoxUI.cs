@@ -13,7 +13,6 @@ public class RandomBoxUI : MonoBehaviour
 
     private void Start()
     {
-        // 랜덤박스 스크립트 검사
         if (randomBox == null)
         {
             randomBox = GetComponent<RandomBox>();
@@ -24,14 +23,15 @@ public class RandomBoxUI : MonoBehaviour
             }
         }
 
-        // 버튼 이벤트 설정
         if (openBoxButton != null)
         {
             openBoxButton.onClick.AddListener(OnOpenBoxButtonClicked);
         }
     }
 
-    // 랜덤박스 열기 버튼 클릭
+    /// <summary>
+    /// 랜덤박스 버튼 클릭
+    /// </summary>
     private void OnOpenBoxButtonClicked()
     {
         randomBox.OpenRandomBox();

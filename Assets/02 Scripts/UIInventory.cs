@@ -31,15 +31,12 @@ public class UIInventory : MonoBehaviour
     /// </summary>
     private void InitializeComponents()
     {
-        // ScrollView 구성요소 찾기
         if (scrollView == null)
             scrollView = GetComponentInChildren<ScrollRect>();
 
-        // Content 찾기
         if (slotsParent == null && scrollView != null)
             slotsParent = scrollView.content;
 
-        // 슬롯 부모가 없으면 현재 오브젝트를 부모로 사용
         if (slotsParent == null)
             slotsParent = transform;
     }
@@ -62,29 +59,19 @@ public class UIInventory : MonoBehaviour
     /// <param name="preserveScrollPosition">스크롤 위치 보존 여부</param>
     public void RefreshInventory(bool preserveScrollPosition = false)
     {
-        // 플레이어 캐릭터 참조 확인
         Character playerCharacter = GameManager.Instance?.PlayerCharacter;
         if (playerCharacter == null)
             return;
 
-        // 스크롤 위치 저장
         if (preserveScrollPosition && scrollView != null)
             lastScrollPosition = scrollView.normalizedPosition;
 
-        // 필요한 슬롯 개수 계산
         var inventory = playerCharacter.Inventory;
-        int requiredSlots = Mathf.Max(1, inventory.Count); // 최소 1개 슬롯 필요
+        int requiredSlots = Mathf.Max(0, inventory.Count);
 
-        // 슬롯 개수 조정
         AdjustSlotCount(requiredSlots);
-
-        // 모든 슬롯 초기화
         ClearAllSlots();
-
-        // 아이템 정보로 슬롯 채우기
         PopulateSlots(inventory);
-
-        // 스크롤 위치 복원
         if (preserveScrollPosition && scrollView != null)
             scrollView.normalizedPosition = lastScrollPosition;
 

@@ -21,12 +21,18 @@ public class UIStatus : MonoBehaviour
         backBtn.onClick.AddListener(OnClickBackBtn);
     }
 
+    /// <summary>
+    /// 뒤로가기 버튼 클릭
+    /// </summary>
     void OnClickBackBtn()
     {
         gameObject.SetActive(false);
         UIManager.Instance.MainMenu.ReActiveButtons();
     }
 
+    /// <summary>
+    /// 스테이터스 UI 갱신
+    /// </summary>
     public void UpdateStatus()               
     {
         gameObject.SetActive(true);
@@ -37,6 +43,10 @@ public class UIStatus : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 캐릭터 능력치 정보(공, 체, 방, 치명타) 업데이트
+    /// </summary>
+    /// <param name="character"></param>
     public void UpdateCharacterInfo(Character character)
     {
         if (character == null)

@@ -23,7 +23,9 @@ public class RandomBox : MonoBehaviour
         }
     }
 
-    // 랜덤박스 열기
+    /// <summary>
+    /// 랜덤박스 열기
+    /// </summary>
     public void OpenRandomBox()
     {
         if (possibleItems.Count == 0)
@@ -31,29 +33,22 @@ public class RandomBox : MonoBehaviour
             return;
         }
 
-        // 플레이어 캐릭터 확인
         Character playerCharacter = GameManager.Instance?.PlayerCharacter;
         if (playerCharacter == null)
         {
             return;
         }
 
-        // 획득할 아이템 개수 결정
         int itemCount = Random.Range(minItemCount, maxItemCount + 1);
         bool anyItemAdded = false;
 
-        // 지정된 개수만큼 아이템 획득
         for (int i = 0; i < itemCount; i++)
         {
-            // 아이템 선택
             ItemData selectedItem = GetRandomItem();
 
             if (selectedItem != null)
             {
-                // 아이템 수량 결정 (중첩 가능한 아이템은 1~3개, 불가능한 아이템은 1개)
                 int amount = selectedItem.IsStackable ? Random.Range(1, 10) : 1;
-
-                // 캐릭터에 아이템 추가
                 bool added = playerCharacter.AddItem(selectedItem, amount);
 
                 if (added)
@@ -67,18 +62,19 @@ public class RandomBox : MonoBehaviour
             }
         }
 
-        // 아이템이 추가되었고 인벤토리 UI가 현재 표시 중이면 강제 새로고침
         if (anyItemAdded && UIManager.Instance != null && UIManager.Instance.Inventory != null)
         {
             if (UIManager.Instance.Inventory.gameObject.activeSelf)
             {
-                // 인벤토리 UI가 열려있는 상태면 강제로 새로고침
                 UIManager.Instance.Inventory.ForceRefreshNow();
             }
         }
     }
 
-    // 가중치에 따라 랜덤 아이템 선택
+    /// <summary>
+    /// 랜덤으로 아이템 뽑기
+    /// </summary>
+    /// <returns></returns>
     private ItemData GetRandomItem()
     {
         // 확률 목록이 비어있으면 모든 아이템에 동일한 확률 적용
@@ -88,20 +84,14 @@ public class RandomBox : MonoBehaviour
             return possibleItems[randomIndex];
         }
 
-        // 가중치 적용 랜덤 선택
         float totalWeight = 0f;
-
-        // 전체 가중치 합계 계산
         for (int i = 0; i < itemWeights.Count; i++)
         {
             totalWeight += itemWeights[i];
         }
-
-        // 랜덤 값 생성
         float randomValue = Random.Range(0f, totalWeight);
         float currentWeight = 0f;
 
-        // 가중치에 따라 아이템 선택
         for (int i = 0; i < possibleItems.Count; i++)
         {
             currentWeight += itemWeights[i];
@@ -111,8 +101,6 @@ public class RandomBox : MonoBehaviour
                 return possibleItems[i];
             }
         }
-
-        // 기본 반환 (첫 번째 아이템)
         return possibleItems[0];
     }
 }

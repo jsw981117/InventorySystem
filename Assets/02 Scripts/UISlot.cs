@@ -14,14 +14,19 @@ public class UISlot : MonoBehaviour, IPointerClickHandler
     private int slotIndex; // 슬롯 인덱스
     private Item item; // 아이템 참조
 
-    // 슬롯 초기화 메서드
+    /// <summary>
+    /// 슬롯 초기화
+    /// </summary>
+    /// <param name="index"></param>
     public void InitSlot(int index)
     {
         slotIndex = index;
         ClearSlot();
     }
 
-    // 슬롯 비우기 메서드
+    /// <summary>
+    /// 슬롯 초기화
+    /// </summary>
     public void ClearSlot()
     {
         item = null;
@@ -44,14 +49,19 @@ public class UISlot : MonoBehaviour, IPointerClickHandler
 
     }
 
-    // 아이템 설정 메서드
+    /// <summary>
+    /// 슬롯에 아이템 설정
+    /// </summary>
+    /// <param name="newItem"></param>
     public void SetItem(Item newItem)
     {
         item = newItem;
         UpdateUI();
     }
 
-    // UI 업데이트 메서드
+    /// <summary>
+    /// 슬롯 UI 갱신
+    /// </summary>
     public void UpdateUI()
     {
         if (item != null && !item.IsEmpty())
@@ -98,65 +108,48 @@ public class UISlot : MonoBehaviour, IPointerClickHandler
         }
     }
 
-    // 슬롯이 비어있는지 확인하는 메서드
+    /// <summary>
+    /// 슬롯이 비어있는지 확인
+    /// </summary>
+    /// <returns></returns>
     public bool IsEmpty()
     {
         return item == null || item.IsEmpty();
     }
 
-    // 아이템 가져오기
-    public Item GetItem()
-    {
-        return item;
-    }
 
-    // 아이템 개수 가져오기
-    public int GetItemAmount()
-    {
-        return item != null ? item.Amount : 0;
-    }
 
-    // 슬롯 인덱스 가져오기
-    public int GetSlotIndex()
-    {
-        return slotIndex;
-    }
-
-    // 클릭 이벤트 처리
+    /// <summary>
+    /// 마우스 클릭 이벤트 처리
+    /// </summary>
+    /// <param name="eventData"></param>
     public void OnPointerClick(PointerEventData eventData)
     {
         if (IsEmpty())
             return;
 
-        // 좌클릭 - 아이템 장착/해제
         if (eventData.button == PointerEventData.InputButton.Left)
         {
-            Debug.Log($"슬롯 {slotIndex}의 아이템 선택: {item.ItemName}");
 
-            // 장비 아이템인 경우에만 장착 가능
             if (GameManager.Instance != null && GameManager.Instance.PlayerCharacter != null &&
                 item.IsEquippable())
             {
-                // 이미 장착 중인지 확인
                 bool isEquipped = GameManager.Instance.PlayerCharacter.IsItemEquipped(item);
 
                 if (isEquipped)
                 {
-                    // 이미 장착 중이면 해제
                     GameManager.Instance.PlayerCharacter.UnEquip(item.Type);
-                    Debug.Log($"아이템 해제: {item.ItemName}");
                 }
                 else
                 {
-                    // 장착되지 않았다면 장착
                     item.Use(GameManager.Instance.PlayerCharacter);
-                    Debug.Log($"아이템 장착: {item.ItemName}");
                 }
             }
         }
         else if (eventData.button == PointerEventData.InputButton.Right)
         {
             // 아이템 정보 표시
+            // 기능을 넣는다면 여기에...
         }
     }
 }

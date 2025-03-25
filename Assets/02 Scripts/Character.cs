@@ -27,7 +27,6 @@ public class Character : MonoBehaviour
     private Item equippedArmor;
     private Item equippedAccessory;
 
-    // 이벤트 시스템 - 상태 변경 시 UI 업데이트를 위해 사용
     [HideInInspector] public InventoryChangedEvent OnInventoryChanged = new InventoryChangedEvent();
     [HideInInspector] public UnityEvent OnEquipmentChanged = new UnityEvent();
     [HideInInspector] public UnityEvent OnStatsChanged = new UnityEvent();
@@ -52,12 +51,12 @@ public class Character : MonoBehaviour
                                  (equippedWeapon != null ? equippedWeapon.CriticalChanceBonus : 0) +
                                  (equippedAccessory != null ? equippedAccessory.CriticalChanceBonus : 0);
 
-    // 인벤토리 속성
+    // 인벤토리 설정
     public IReadOnlyList<Item> Inventory => inventory;
     public int InventorySize => inventory.Count;
     public bool IsInventoryFull => inventory.Count >= MAX_INVENTORY_SIZE;
 
-    // 장착 아이템 
+    // 장착중인 아이템 
     public Item EquippedWeapon => equippedWeapon;
     public Item EquippedArmor => equippedArmor;
     public Item EquippedAccessory => equippedAccessory;
@@ -165,48 +164,6 @@ public class Character : MonoBehaviour
         return true;
     }
 
-    /// <summary>
-    /// Item 객체를 인벤토리에 추가합니다.
-    /// </summary>
-    public bool AddItem(Item item)
-    {
-        if (item == null || item.IsEmpty())
-            return false;
-
-        if (IsInventoryFull)
-            return false;
-
-        // 스택 가능한 아이템인 경우 기존 아이템에 추가 시도
-        if (item.IsStackable)
-        {
-            for (int i = 0; i < inventory.Count; i++)
-            {
-                Item existingItem = inventory[i];
-                if (existingItem.ItemName == item.ItemName && existingItem.Amount < existingItem.MaxStack)
-                {
-                    // 기존 아이템에 수량 추가
-                    int amountToAdd = Mathf.Min(item.Amount, existingItem.MaxStack - existingItem.Amount);
-                    existingItem.AddAmount(amountToAdd);
-
-                    // 남은 수량이 있다면 새 아이템으로 추가
-                    int remaining = item.Amount - amountToAdd;
-                    if (remaining > 0)
-                    {
-                        Item remainingItem = new Item(item.Data, remaining);
-                        inventory.Add(remainingItem);
-                    }
-
-                    OnInventoryChanged.Invoke(this);
-                    return true;
-                }
-            }
-        }
-
-        // 새 인벤토리 슬롯에 추가
-        inventory.Add(item);
-        OnInventoryChanged.Invoke(this);
-        return true;
-    }
 
     /// <summary>
     /// 아이템이 기존 인벤토리에 스택 가능한지 확인합니다.
@@ -225,58 +182,6 @@ public class Character : MonoBehaviour
 
         return false;
     }
-
-    /// <summary>
-    /// 인벤토리에서 아이템을 제거합니다.
-    /// </summary>
-    public bool RemoveItem(Item item)
-    {
-        if (item == null)
-            return false;
-
-        bool result = inventory.Remove(item);
-
-        if (result)
-            OnInventoryChanged.Invoke(this);
-
-        return result;
-    }
-
-    /// <summary>
-    /// 인벤토리에서 특정 인덱스의 아이템을 제거합니다.
-    /// </summary>
-    public bool RemoveItemAt(int index)
-    {
-        if (index < 0 || index >= inventory.Count)
-            return false;
-
-        inventory.RemoveAt(index);
-        OnInventoryChanged.Invoke(this);
-        return true;
-    }
-
-    /// <summary>
-    /// 인벤토리에서 아이템 이름으로 아이템을 찾습니다.
-    /// </summary>
-    public Item GetItem(string itemName)
-    {
-        for (int i = 0; i < inventory.Count; i++)
-        {
-            if (inventory[i].ItemName == itemName)
-                return inventory[i];
-        }
-        return null;
-    }
-
-    /// <summary>
-    /// 인덱스로 인벤토리 아이템을 가져옵니다.
-    /// </summary>
-    public Item GetItemAt(int index)
-    {
-        if (index >= 0 && index < inventory.Count)
-            return inventory[index];
-        return null;
-    }
     #endregion
 
     #region 장비 관리 메서드
@@ -288,7 +193,6 @@ public class Character : MonoBehaviour
         if (item == null || !item.IsEquippable())
             return;
 
-        // 아이템 타입에 따라 적절한 슬롯에 장착
         switch (item.Type)
         {
             case ItemData.ItemType.Weapon:
@@ -304,14 +208,13 @@ public class Character : MonoBehaviour
                 break;
         }
 
-        // 장비 변경 알림
         OnEquipmentChanged.Invoke();
         OnStatsChanged.Invoke();
         OnInventoryChanged.Invoke(this); // UI에서 장착 상태 표시를 위해
     }
 
     /// <summary>
-    /// 특정 타입의 장착 아이템을 해제합니다.
+    /// 장착템 해제
     /// </summary>
     public void UnEquip(ItemData.ItemType itemType)
     {
@@ -346,7 +249,6 @@ public class Character : MonoBehaviour
 
         if (itemUnequipped)
         {
-            // 장비 해제 알림
             OnEquipmentChanged.Invoke();
             OnStatsChanged.Invoke();
             OnInventoryChanged.Invoke(this); // UI에서 장착 상태 표시를 위해
@@ -354,7 +256,7 @@ public class Character : MonoBehaviour
     }
 
     /// <summary>
-    /// 아이템이 현재 장착 중인지 확인합니다.
+    /// 아이템이 장착 중인지 확인
     /// </summary>
     public bool IsItemEquipped(Item item)
     {

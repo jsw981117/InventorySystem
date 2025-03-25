@@ -5,10 +5,10 @@ using UnityEngine;
 [System.Serializable]
 public class Item
 {
-    [SerializeField] private ItemData itemData; // ItemData SO 참조
-    [SerializeField] private int amount = 1; // 아이템 수량
+    [SerializeField] private ItemData itemData;
+    [SerializeField] private int amount = 1;
 
-    // 프로퍼티 - 모든 데이터는 ItemData에서 가져옴
+    // 아이템 속성
     public string ItemName => itemData != null ? itemData.ItemName : "Unknown Item";
     public Sprite ItemSprite => itemData != null ? itemData.ItemSprite : null;
     public string Description => itemData != null ? itemData.Description : "";
@@ -16,32 +16,24 @@ public class Item
     public bool IsStackable => itemData != null && itemData.IsStackable;
     public int MaxStack => itemData != null ? itemData.MaxStack : 1;
 
-    // 장비 스탯 프로퍼티
+    // 장비 스탯
     public int AttackBonus => itemData != null ? itemData.AttackBonus : 0;
     public int DefenseBonus => itemData != null ? itemData.DefenseBonus : 0;
     public int HealthBonus => itemData != null ? itemData.HealthBonus : 0;
     public float CriticalChanceBonus => itemData != null ? itemData.CriticalChanceBonus : 0f;
-
-    // ItemData 직접 접근 프로퍼티
-    public ItemData Data => itemData;
-
-    // 수량 프로퍼티
     public int Amount => amount;
 
-    // 생성자
     public Item(ItemData data, int amount = 1)
     {
         this.itemData = data;
         this.amount = Mathf.Min(amount, data != null && data.IsStackable ? data.MaxStack : 1);
     }
 
-    // 복제 생성자
-    public Item Clone()
-    {
-        return new Item(itemData, amount);
-    }
-
-    // 수량 증가 메서드
+    /// <summary>
+    /// 아이템 수량 추가
+    /// </summary>
+    /// <param name="amountToAdd"></param>
+    /// <returns></returns>
     public bool AddAmount(int amountToAdd)
     {
         if (!IsStackable)
@@ -55,37 +47,20 @@ public class Item
         return false;
     }
 
-    // 수량 감소 메서드
-    public bool RemoveAmount(int amountToRemove)
-    {
-        if (amount >= amountToRemove)
-        {
-            amount -= amountToRemove;
-            return true;
-        }
-        return false;
-    }
 
-    // 수량 설정 메서드
-    public void SetAmount(int newAmount)
-    {
-        if (IsStackable)
-        {
-            amount = Mathf.Clamp(newAmount, 0, MaxStack);
-        }
-        else
-        {
-            amount = 1; // 스택 불가능한 아이템은 항상 1개
-        }
-    }
-
-    // 아이템이 비었는지 확인
+    /// <summary>
+    /// 아이템이 비어있는지 확인
+    /// </summary>
+    /// <returns></returns>
     public bool IsEmpty()
     {
         return itemData == null || amount <= 0;
     }
 
-    // 장비 가능한 아이템인지 확인
+    /// <summary>
+    /// 아이템이 장착 가능한지 확인
+    /// </summary>
+    /// <returns></returns>
     public bool IsEquippable()
     {
         return itemData != null && (
@@ -95,7 +70,11 @@ public class Item
         );
     }
 
-    // 아이템 사용 메서드
+    /// <summary>
+    /// 아이템 사용
+    /// </summary>
+    /// <param name="character"></param>
+    /// <returns></returns>
     public virtual bool Use(Character character)
     {
         if (itemData == null)

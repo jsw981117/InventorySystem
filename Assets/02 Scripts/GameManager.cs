@@ -56,7 +56,9 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    // 플레이어 캐릭터 설정
+    /// <summary>
+    /// 플레이어 캐릭터 설정
+    /// </summary>
     private void SetupPlayerCharacter()
     {
         if (_playerCharacter == null)
@@ -74,7 +76,18 @@ public class GameManager : MonoBehaviour
         SetData("전사", "플레이어", 1, "기본 캐릭터입니다.", 99999,  10, 100, 5, 0.05f);
     }
 
-    // 캐릭터 기본 데이터 설정
+    /// <summary>
+    /// 플레이어 캐릭터 데이터 설정
+    /// </summary>
+    /// <param name="job"></param>
+    /// <param name="name"></param>
+    /// <param name="level"></param>
+    /// <param name="description"></param>
+    /// <param name="gold"></param>
+    /// <param name="attackPower"></param>
+    /// <param name="healthPoints"></param>
+    /// <param name="defense"></param>
+    /// <param name="criticalChance"></param>
     public void SetData(string job, string name, int level, string description, int gold,  int attackPower, int healthPoints, int defense, float criticalChance)
     {
         if (_playerCharacter == null)
@@ -83,10 +96,7 @@ public class GameManager : MonoBehaviour
             _playerCharacter = characterObj.AddComponent<Character>();
         }
 
-        // 캐릭터 기본 데이터 설정
         _playerCharacter.SetCharacterData(job, name, level, description, gold, attackPower, healthPoints, defense, criticalChance);
-
-        // UIManager에 캐릭터 참조 전달 (UI 업데이트는 Character의 이벤트를 통해 처리됨)
         if (UIManager.Instance != null)
         {
             UIManager.Instance.SetPlayerCharacter(_playerCharacter);
