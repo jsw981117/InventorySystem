@@ -35,6 +35,12 @@ public class Item
         this.amount = Mathf.Min(amount, data != null && data.IsStackable ? data.MaxStack : 1);
     }
 
+    // 복제 생성자
+    public Item Clone()
+    {
+        return new Item(itemData, amount);
+    }
+
     // 수량 증가 메서드
     public bool AddAmount(int amountToAdd)
     {
@@ -58,6 +64,19 @@ public class Item
             return true;
         }
         return false;
+    }
+
+    // 수량 설정 메서드
+    public void SetAmount(int newAmount)
+    {
+        if (IsStackable)
+        {
+            amount = Mathf.Clamp(newAmount, 0, MaxStack);
+        }
+        else
+        {
+            amount = 1; // 스택 불가능한 아이템은 항상 1개
+        }
     }
 
     // 아이템이 비었는지 확인
@@ -90,36 +109,5 @@ public class Item
         }
 
         return false;
-    }
-
-    // 아이템 정보 문자열 반환
-    public override string ToString()
-    {
-        if (itemData == null)
-            return "빈 아이템";
-
-        string info = $"{ItemName} - {Description}\n";
-
-        if (IsEquippable())
-        {
-            if (AttackBonus != 0) info += $"공격력: +{AttackBonus} ";
-            if (DefenseBonus != 0) info += $"방어력: +{DefenseBonus} ";
-            if (HealthBonus != 0) info += $"체력: +{HealthBonus} ";
-            if (CriticalChanceBonus != 0) info += $"치명타: +{CriticalChanceBonus * 100}% ";
-        }
-
-        return info;
-    }
-
-    public void SetAmount(int newAmount)
-    {
-        if (IsStackable)
-        {
-            amount = Mathf.Clamp(newAmount, 0, MaxStack);
-        }
-        else
-        {
-            amount = 1; // 스택 불가능한 아이템은 항상 1개
-        }
     }
 }

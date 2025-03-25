@@ -41,7 +41,6 @@ public class UIStatus : MonoBehaviour
     {
         if (character == null)
         {
-            Debug.LogError("Character is null");
             return;
         }
 

@@ -13,148 +13,72 @@ public class Character : MonoBehaviour
     [SerializeField] private string characterName;
     [SerializeField] private int level;
     [SerializeField] private string description;
+    [SerializeField] private int gold;
 
     [SerializeField] private int attackPower;
     [SerializeField] private int healthPoints;
     [SerializeField] private int defense;
     [SerializeField][Range(0, 1)] private float criticalChance;
 
-    // 기본 장비 아이템 데이터 참조
-    [Header("Basic Items")]
-    [SerializeField] private ItemData startingSwordData;
-    [SerializeField] private ItemData startingArmorData;
-    [SerializeField] private ItemData startingMaterialData; // 재료 아이템으로 변경
-    [SerializeField] private int startingMaterialCount = 5; // 재료 아이템 초기 수량
-
-    // 인벤토리 시스템
-    private List<InventoryItem> inventory = new List<InventoryItem>();
+    private List<Item> inventory = new List<Item>();
     private const int MAX_INVENTORY_SIZE = 120;
 
-    // 상태 변경 이벤트
-    [HideInInspector] public InventoryChangedEvent OnInventoryChanged = new InventoryChangedEvent();
-    [HideInInspector] public UnityEvent OnEquipmentChanged = new UnityEvent();
-    [HideInInspector] public UnityEvent OnStatsChanged = new UnityEvent();
-
-    // 장착 아이템
     private Item equippedWeapon;
     private Item equippedArmor;
     private Item equippedAccessory;
 
-    // 프로퍼티
+    // 이벤트 시스템 - 상태 변경 시 UI 업데이트를 위해 사용
+    [HideInInspector] public InventoryChangedEvent OnInventoryChanged = new InventoryChangedEvent();
+    [HideInInspector] public UnityEvent OnEquipmentChanged = new UnityEvent();
+    [HideInInspector] public UnityEvent OnStatsChanged = new UnityEvent();
+
+    // 캐릭터 기본 정보
     public string CharacterJob { get => characterJob; set => characterJob = value; }
     public string CharacterName { get => characterName; set => characterName = value; }
     public int Level { get => level; set => level = value; }
     public string Description { get => description; set => description = value; }
+    public int Gold { get => gold; set => gold = value; }
 
-    // 기본 스탯 + 장비 보너스를 포함한 최종 스탯 프로퍼티
-    public int AttackPower
-    {
-        get => attackPower + (equippedWeapon != null ? equippedWeapon.AttackBonus : 0);
-        set
-        {
-            attackPower = value;
-            OnStatsChanged.Invoke();
-        }
-    }
 
-    public int HealthPoints
-    {
-        get => healthPoints +
-               (equippedArmor != null ? equippedArmor.HealthBonus : 0) +
-               (equippedAccessory != null ? equippedAccessory.HealthBonus : 0);
-        set
-        {
-            healthPoints = value;
-            OnStatsChanged.Invoke();
-        }
-    }
+    // 장비 보너스가 적용된 최종 스탯
+    public int AttackPower => attackPower + (equippedWeapon != null ? equippedWeapon.AttackBonus : 0);
+    public int HealthPoints => healthPoints +
+                             (equippedArmor != null ? equippedArmor.HealthBonus : 0) +
+                             (equippedAccessory != null ? equippedAccessory.HealthBonus : 0);
+    public int Defense => defense +
+                        (equippedArmor != null ? equippedArmor.DefenseBonus : 0) +
+                        (equippedAccessory != null ? equippedAccessory.DefenseBonus : 0);
+    public float CriticalChance => criticalChance +
+                                 (equippedWeapon != null ? equippedWeapon.CriticalChanceBonus : 0) +
+                                 (equippedAccessory != null ? equippedAccessory.CriticalChanceBonus : 0);
 
-    public int Defense
-    {
-        get => defense +
-               (equippedArmor != null ? equippedArmor.DefenseBonus : 0) +
-               (equippedAccessory != null ? equippedAccessory.DefenseBonus : 0);
-        set
-        {
-            defense = value;
-            OnStatsChanged.Invoke();
-        }
-    }
-
-    public float CriticalChance
-    {
-        get => criticalChance +
-               (equippedWeapon != null ? equippedWeapon.CriticalChanceBonus : 0) +
-               (equippedAccessory != null ? equippedAccessory.CriticalChanceBonus : 0);
-        set
-        {
-            criticalChance = value;
-            OnStatsChanged.Invoke();
-        }
-    }
-
-    // 인벤토리 프로퍼티
-    public IReadOnlyList<InventoryItem> Inventory => inventory;
+    // 인벤토리 속성
+    public IReadOnlyList<Item> Inventory => inventory;
     public int InventorySize => inventory.Count;
     public bool IsInventoryFull => inventory.Count >= MAX_INVENTORY_SIZE;
 
-    // 장착 아이템 프로퍼티
+    // 장착 아이템 
     public Item EquippedWeapon => equippedWeapon;
     public Item EquippedArmor => equippedArmor;
     public Item EquippedAccessory => equippedAccessory;
 
     private void Awake()
     {
-        // 초기화 로직 수행
         InitializeCharacter();
     }
 
-    private void InitializeCharacter()
-    {
-        // 기본 아이템 지급
-        if (startingSwordData != null || startingArmorData != null || startingMaterialData != null)
-        {
-            // 인벤토리 초기화
-            inventory.Clear();
-            equippedWeapon = null;
-            equippedArmor = null;
-            equippedAccessory = null;
-
-            // 기본 무기 생성 및 장착
-            if (startingSwordData != null)
-            {
-                Item sword = new Item(startingSwordData);
-                AddItemToInventory(new InventoryItem(sword));
-                Equip(sword);
-            }
-
-            // 기본 방어구 생성 및 장착
-            if (startingArmorData != null)
-            {
-                Item armor = new Item(startingArmorData);
-                AddItemToInventory(new InventoryItem(armor));
-                Equip(armor);
-            }
-
-            // 기본 재료 지급
-            if (startingMaterialData != null && startingMaterialCount > 0)
-            {
-                AddItem(startingMaterialData, startingMaterialCount);
-            }
-
-            // 이벤트 발생
-            OnInventoryChanged.Invoke(this);
-            OnEquipmentChanged.Invoke();
-            OnStatsChanged.Invoke();
-        }
-    }
-
-    public void SetCharacterData(string job, string name, int lvl, string desc, int atk, int hp, int def, float critChance)
+    /// <summary>
+    /// 캐릭터의 기본 데이터를 설정합니다.
+    /// </summary>
+    public void SetCharacterData(string job, string name, int lvl, string desc, int gold, int atk, int hp, int def, float critChance)
     {
         CharacterJob = job;
         CharacterName = name;
         Level = lvl;
         Description = desc;
+        Gold = gold;
+
+        // 기본 스탯 설정
         attackPower = atk;
         healthPoints = hp;
         defense = def;
@@ -164,100 +88,153 @@ public class Character : MonoBehaviour
         InitializeCharacter();
     }
 
-    // ItemData를 통해 직접 아이템 추가
+    /// <summary>
+    /// 캐릭터의 초기 아이템을 설정하고 인벤토리를 초기화합니다.
+    /// </summary>
+    private void InitializeCharacter()
+    {
+        // 인벤토리와 장착 아이템 초기화
+        inventory.Clear();
+        equippedWeapon = null;
+        equippedArmor = null;
+        equippedAccessory = null;
+
+        // 이벤트 발생 - 초기화 완료 통지
+        NotifyAllChanged();
+    }
+
+    /// <summary>
+    /// 모든 상태 변경 이벤트를 한 번에 발생시키는 유틸리티 메서드
+    /// </summary>
+    private void NotifyAllChanged()
+    {
+        OnInventoryChanged.Invoke(this);
+        OnEquipmentChanged.Invoke();
+        OnStatsChanged.Invoke();
+    }
+
+    #region 인벤토리 관리 메서드
+    /// <summary>
+    /// ItemData를 사용하여 아이템을 인벤토리에 추가합니다.
+    /// </summary>
     public bool AddItem(ItemData itemData, int amount = 1)
     {
         if (itemData == null)
             return false;
 
-        // 인벤토리가 가득 찼는지 확인하고 스택 가능 여부 확인
+        // 인벤토리가 가득 찼고 스택할 수 없는 경우
         if (IsInventoryFull && !CanStackItem(itemData))
-        {
-            Debug.LogWarning("인벤토리가 가득 찼습니다!");
             return false;
-        }
 
-        // 이미 같은 종류의 아이템이 있고, 중첩 가능한지 확인
+        // 스택 가능한 아이템인 경우 기존 아이템에 추가 시도
         if (itemData.IsStackable)
         {
             for (int i = 0; i < inventory.Count; i++)
             {
-                InventoryItem invItem = inventory[i];
-                if (invItem.Item.ItemName == itemData.ItemName && invItem.Amount < invItem.MaxStack)
+                Item item = inventory[i];
+                if (item.ItemName == itemData.ItemName && item.Amount < item.MaxStack)
                 {
                     // 기존 아이템에 수량 추가
-                    int amountToAdd = Mathf.Min(amount, invItem.MaxStack - invItem.Amount);
-                    invItem.AddAmount(amountToAdd);
+                    int amountToAdd = Mathf.Min(amount, item.MaxStack - item.Amount);
+                    item.AddAmount(amountToAdd);
 
-                    // 중요: Item 객체의 수량도 동기화
-                    invItem.Item.SetAmount(invItem.Amount);
-
-                    // 추가 후 남은 수량이 있다면 새 슬롯에 추가
+                    // 남은 수량이 있다면 새 아이템으로 추가
                     int remaining = amount - amountToAdd;
                     if (remaining > 0 && !IsInventoryFull)
                     {
-                        Item newItem = new Item(itemData);
-                        // 중요: 새 아이템의 수량 설정
-                        newItem.SetAmount(remaining);
-                        InventoryItem newInvItem = new InventoryItem(newItem, remaining);
-                        AddItemToInventory(newInvItem);
+                        Item newItem = new Item(itemData, remaining);
+                        inventory.Add(newItem);
                     }
 
-                    // 이벤트 발생
+                    // 아이템 추가 완료 알림
                     OnInventoryChanged.Invoke(this);
                     return true;
                 }
             }
         }
 
-        // 같은 종류의 아이템이 없거나 중첩 불가능한 경우 새 슬롯에 추가
-        Item item = new Item(itemData);
-        // 중요: 아이템의 수량 설정
-        item.SetAmount(amount);
-        InventoryItem inventoryItem = new InventoryItem(item, amount);
-        AddItemToInventory(inventoryItem);
+        // 새 아이템 인스턴스 생성
+        Item itemToAdd = new Item(itemData, amount);
 
-        Debug.Log($"{itemData.ItemName}을(를) 인벤토리에 추가했습니다.");
+        // 인벤토리에 추가
+        if (IsInventoryFull)
+            return false;
 
-        // 이벤트 발생
+        inventory.Add(itemToAdd);
         OnInventoryChanged.Invoke(this);
         return true;
     }
 
-    // 인벤토리에 아이템 추가 (내부 메서드)
-    private bool AddItemToInventory(InventoryItem item)
+    /// <summary>
+    /// Item 객체를 인벤토리에 추가합니다.
+    /// </summary>
+    public bool AddItem(Item item)
     {
+        if (item == null || item.IsEmpty())
+            return false;
+
         if (IsInventoryFull)
             return false;
 
+        // 스택 가능한 아이템인 경우 기존 아이템에 추가 시도
+        if (item.IsStackable)
+        {
+            for (int i = 0; i < inventory.Count; i++)
+            {
+                Item existingItem = inventory[i];
+                if (existingItem.ItemName == item.ItemName && existingItem.Amount < existingItem.MaxStack)
+                {
+                    // 기존 아이템에 수량 추가
+                    int amountToAdd = Mathf.Min(item.Amount, existingItem.MaxStack - existingItem.Amount);
+                    existingItem.AddAmount(amountToAdd);
+
+                    // 남은 수량이 있다면 새 아이템으로 추가
+                    int remaining = item.Amount - amountToAdd;
+                    if (remaining > 0)
+                    {
+                        Item remainingItem = new Item(item.Data, remaining);
+                        inventory.Add(remainingItem);
+                    }
+
+                    OnInventoryChanged.Invoke(this);
+                    return true;
+                }
+            }
+        }
+
+        // 새 인벤토리 슬롯에 추가
         inventory.Add(item);
+        OnInventoryChanged.Invoke(this);
         return true;
     }
 
-    // 아이템 스택 가능 여부 확인
+    /// <summary>
+    /// 아이템이 기존 인벤토리에 스택 가능한지 확인합니다.
+    /// </summary>
     private bool CanStackItem(ItemData itemData)
     {
         if (itemData == null || !itemData.IsStackable)
             return false;
 
-        foreach (InventoryItem invItem in inventory)
+        for (int i = 0; i < inventory.Count; i++)
         {
-            if (invItem.Item.ItemName == itemData.ItemName && invItem.Amount < invItem.MaxStack)
-            {
+            Item item = inventory[i];
+            if (item.ItemName == itemData.ItemName && item.Amount < item.MaxStack)
                 return true;
-            }
         }
 
         return false;
     }
 
-    // 인벤토리에서 아이템 제거
-    public bool RemoveItem(InventoryItem inventoryItem)
+    /// <summary>
+    /// 인벤토리에서 아이템을 제거합니다.
+    /// </summary>
+    public bool RemoveItem(Item item)
     {
-        if (inventoryItem == null)
+        if (item == null)
             return false;
 
-        bool result = inventory.Remove(inventoryItem);
+        bool result = inventory.Remove(item);
 
         if (result)
             OnInventoryChanged.Invoke(this);
@@ -265,7 +242,9 @@ public class Character : MonoBehaviour
         return result;
     }
 
-    // 인벤토리에서 인덱스로 아이템 제거
+    /// <summary>
+    /// 인벤토리에서 특정 인덱스의 아이템을 제거합니다.
+    /// </summary>
     public bool RemoveItemAt(int index)
     {
         if (index < 0 || index >= inventory.Count)
@@ -276,137 +255,113 @@ public class Character : MonoBehaviour
         return true;
     }
 
-    // 아이템 장착 메서드
+    /// <summary>
+    /// 인벤토리에서 아이템 이름으로 아이템을 찾습니다.
+    /// </summary>
+    public Item GetItem(string itemName)
+    {
+        for (int i = 0; i < inventory.Count; i++)
+        {
+            if (inventory[i].ItemName == itemName)
+                return inventory[i];
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// 인덱스로 인벤토리 아이템을 가져옵니다.
+    /// </summary>
+    public Item GetItemAt(int index)
+    {
+        if (index >= 0 && index < inventory.Count)
+            return inventory[index];
+        return null;
+    }
+    #endregion
+
+    #region 장비 관리 메서드
+    /// <summary>
+    /// 아이템을 장착합니다.
+    /// </summary>
     public void Equip(Item item)
     {
         if (item == null || !item.IsEquippable())
-        {
-            Debug.LogWarning("장착할 수 없는 아이템입니다.");
             return;
-        }
 
         // 아이템 타입에 따라 적절한 슬롯에 장착
         switch (item.Type)
         {
             case ItemData.ItemType.Weapon:
-                // 이미 무기를 장착 중이면 해제
-                if (equippedWeapon != null)
-                {
-                    Debug.Log($"{equippedWeapon.ItemName}을(를) 해제했습니다.");
-                }
-
                 equippedWeapon = item;
                 break;
 
             case ItemData.ItemType.Armor:
-                if (equippedArmor != null)
-                {
-                    Debug.Log($"{equippedArmor.ItemName}을(를) 해제했습니다.");
-                }
-
                 equippedArmor = item;
                 break;
 
             case ItemData.ItemType.Accessory:
-                if (equippedAccessory != null)
-                {
-                    Debug.Log($"{equippedAccessory.ItemName}을(를) 해제했습니다.");
-                }
-
                 equippedAccessory = item;
                 break;
         }
 
-        // 인벤토리에서 아이템을 제거하지 않음 (이 부분 제거)
-        // RemoveItemByInstance(item);
-
-        Debug.Log($"{item.ItemName}을(를) 장착했습니다.");
-
-        // 이벤트 발생
+        // 장비 변경 알림
         OnEquipmentChanged.Invoke();
         OnStatsChanged.Invoke();
-        // 인벤토리 UI도 갱신해야 함 (장착 상태 표시를 위해)
-        OnInventoryChanged.Invoke(this);
+        OnInventoryChanged.Invoke(this); // UI에서 장착 상태 표시를 위해
     }
 
-
-    // 아이템 해제 메서드
+    /// <summary>
+    /// 특정 타입의 장착 아이템을 해제합니다.
+    /// </summary>
     public void UnEquip(ItemData.ItemType itemType)
     {
-        Item itemToUnequip = null;
+        bool itemUnequipped = false;
 
         switch (itemType)
         {
             case ItemData.ItemType.Weapon:
                 if (equippedWeapon != null)
                 {
-                    itemToUnequip = equippedWeapon;
                     equippedWeapon = null;
+                    itemUnequipped = true;
                 }
                 break;
 
             case ItemData.ItemType.Armor:
                 if (equippedArmor != null)
                 {
-                    itemToUnequip = equippedArmor;
                     equippedArmor = null;
+                    itemUnequipped = true;
                 }
                 break;
 
             case ItemData.ItemType.Accessory:
                 if (equippedAccessory != null)
                 {
-                    itemToUnequip = equippedAccessory;
                     equippedAccessory = null;
+                    itemUnequipped = true;
                 }
                 break;
         }
 
-        if (itemToUnequip != null)
+        if (itemUnequipped)
         {
-            // 아이템은 이미 인벤토리에 있으므로 추가하지 않음
-            Debug.Log($"{itemToUnequip.ItemName}을(를) 해제했습니다.");
-
-            // 이벤트 발생
+            // 장비 해제 알림
             OnEquipmentChanged.Invoke();
             OnStatsChanged.Invoke();
-            // 인벤토리 UI도 갱신해야 함 (장착 상태 표시를 위해)
-            OnInventoryChanged.Invoke(this);
-        }
-        else
-        {
-            Debug.LogWarning($"해제할 {itemType} 아이템이 없습니다.");
+            OnInventoryChanged.Invoke(this); // UI에서 장착 상태 표시를 위해
         }
     }
 
-    // 새로운 헬퍼 메서드 추가 - 아이템이 현재 장착 중인지 확인
+    /// <summary>
+    /// 아이템이 현재 장착 중인지 확인합니다.
+    /// </summary>
     public bool IsItemEquipped(Item item)
     {
         if (item == null)
             return false;
 
-        return (equippedWeapon == item ||
-                equippedArmor == item ||
-                equippedAccessory == item);
+        return equippedWeapon == item || equippedArmor == item || equippedAccessory == item;
     }
-
-
-    // 인벤토리에서, 아이템과 해당 수량을 찾아 반환
-    public InventoryItem GetInventoryItem(string itemName)
-    {
-        foreach (InventoryItem item in inventory)
-        {
-            if (item.ItemName == itemName)
-                return item;
-        }
-        return null;
-    }
-
-    // 인덱스로 인벤토리 아이템 가져오기
-    public InventoryItem GetInventoryItemAt(int index)
-    {
-        if (index >= 0 && index < inventory.Count)
-            return inventory[index];
-        return null;
-    }
+    #endregion
 }

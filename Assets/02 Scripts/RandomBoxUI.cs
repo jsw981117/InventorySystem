@@ -20,7 +20,6 @@ public class RandomBoxUI : MonoBehaviour
 
             if (randomBox == null)
             {
-                Debug.LogError("RandomBox 컴포넌트를 찾을 수 없습니다.");
                 return;
             }
         }

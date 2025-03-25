@@ -14,6 +14,8 @@ public class UIMainMenu : MonoBehaviour
     [SerializeField] private TextMeshProUGUI jobText;
     [SerializeField] private TextMeshProUGUI levelText;
     [SerializeField] private TextMeshProUGUI descriptionText;
+    [SerializeField] private TextMeshProUGUI goldText;
+
     void Start()
     {
         statusBtn.onClick.AddListener(OnClickStatusBtn);
@@ -56,12 +58,12 @@ public class UIMainMenu : MonoBehaviour
     {
         if (character == null)
         {
-            Debug.LogError("Character is null");
             return;
         }
         characterNameText.text = $"{character.CharacterName}";
         jobText.text = $"{character.CharacterJob}";
         levelText.text = $"{character.Level}";
         descriptionText.text = character.Description;
+        goldText.text = $"{character.Gold}";
     }
 }

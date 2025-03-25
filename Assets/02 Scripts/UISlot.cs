@@ -42,7 +42,6 @@ public class UISlot : MonoBehaviour, IPointerClickHandler
             countText.text = "";
         }
 
-        Debug.Log("슬롯 비움 완료");
     }
 
     // 아이템 설정 메서드
@@ -62,7 +61,6 @@ public class UISlot : MonoBehaviour, IPointerClickHandler
             {
                 itemImage.gameObject.SetActive(true);
                 itemImage.sprite = item.ItemSprite;
-                Debug.Log($"아이템 이미지 설정: {item.ItemName}");
             }
 
             // 수량 또는 장착 표시 설정
@@ -80,25 +78,18 @@ public class UISlot : MonoBehaviour, IPointerClickHandler
                     // 장착 중인 아이템인 경우만 "E" 표시
                     countBox.gameObject.SetActive(true);
                     countText.text = "E";
-                    Debug.Log($"장비 아이템 E 표시: {item.ItemName} (장착 중)");
                 }
                 else if (item.Amount > 1)
                 {
                     // 스택 가능 아이템이고 수량이 2 이상인 경우 수량 표시
                     countBox.gameObject.SetActive(true);
                     countText.text = item.Amount.ToString();
-                    Debug.Log($"수량 표시: {item.ItemName} x{item.Amount}");
                 }
                 else
                 {
                     // 장착 중이 아니거나 수량이 1이면 countBox 비활성화
                     countBox.gameObject.SetActive(false);
-                    Debug.Log($"수량 1 또는 장착 중이 아닌 장비 - 표시 안함: {item.ItemName}");
                 }
-            }
-            else
-            {
-                Debug.LogWarning("countBox 또는 countText가 null입니다");
             }
         }
         else
@@ -163,10 +154,9 @@ public class UISlot : MonoBehaviour, IPointerClickHandler
                 }
             }
         }
-        // 우클릭 - 아이템 정보 표시
         else if (eventData.button == PointerEventData.InputButton.Right)
         {
-            Debug.Log($"슬롯 {slotIndex}의 아이템 정보: {item.ToString()}");
+            // 아이템 정보 표시
         }
     }
 }

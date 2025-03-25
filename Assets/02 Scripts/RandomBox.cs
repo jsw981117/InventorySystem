@@ -19,7 +19,6 @@ public class RandomBox : MonoBehaviour
         // 확률 리스트 크기 검사
         if (itemWeights.Count > 0 && itemWeights.Count != possibleItems.Count)
         {
-            Debug.LogWarning("아이템 목록과 확률 목록의 크기가 일치하지 않습니다. 모든 아이템에 동일한 확률이 적용됩니다.");
             itemWeights.Clear(); // 불일치할 경우 확률 목록 초기화
         }
     }
@@ -29,7 +28,6 @@ public class RandomBox : MonoBehaviour
     {
         if (possibleItems.Count == 0)
         {
-            Debug.LogWarning("랜덤박스에 아이템이 등록되지 않았습니다.");
             return;
         }
 
@@ -37,7 +35,6 @@ public class RandomBox : MonoBehaviour
         Character playerCharacter = GameManager.Instance?.PlayerCharacter;
         if (playerCharacter == null)
         {
-            Debug.LogError("플레이어 캐릭터를 찾을 수 없습니다.");
             return;
         }
 
@@ -54,19 +51,17 @@ public class RandomBox : MonoBehaviour
             if (selectedItem != null)
             {
                 // 아이템 수량 결정 (중첩 가능한 아이템은 1~3개, 불가능한 아이템은 1개)
-                int amount = selectedItem.IsStackable ? Random.Range(1, 4) : 1;
+                int amount = selectedItem.IsStackable ? Random.Range(1, 10) : 1;
 
                 // 캐릭터에 아이템 추가
                 bool added = playerCharacter.AddItem(selectedItem, amount);
 
                 if (added)
                 {
-                    Debug.Log($"획득: {selectedItem.ItemName} x{amount}");
                     anyItemAdded = true;
                 }
                 else
                 {
-                    Debug.LogWarning($"인벤토리가 가득 차서 {selectedItem.ItemName}을(를) 획득할 수 없습니다.");
                     break;
                 }
             }
@@ -79,7 +74,6 @@ public class RandomBox : MonoBehaviour
             {
                 // 인벤토리 UI가 열려있는 상태면 강제로 새로고침
                 UIManager.Instance.Inventory.ForceRefreshNow();
-                Debug.Log("인벤토리 UI 강제 새로고침 완료");
             }
         }
     }

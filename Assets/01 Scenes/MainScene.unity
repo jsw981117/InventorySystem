@@ -3037,14 +3037,11 @@ MonoBehaviour:
   characterName: 
   level: 0
   description: 
+  gold: 0
   attackPower: 0
   healthPoints: 0
   defense: 0
   criticalChance: 0
-  startingSwordData: {fileID: 0}
-  startingArmorData: {fileID: 0}
-  startingMaterialData: {fileID: 0}
-  startingMaterialCount: 5
   OnInventoryChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -3591,7 +3588,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 11
+  m_text: 0
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ecad75546cd180b408bdbdd54c8d0be0, type: 2}
   m_sharedMaterial: {fileID: -4519649141620612242, guid: ecad75546cd180b408bdbdd54c8d0be0, type: 2}
@@ -6740,6 +6737,7 @@ MonoBehaviour:
   jobText: {fileID: 1700164287}
   levelText: {fileID: 1936648380}
   descriptionText: {fileID: 993466177}
+  goldText: {fileID: 93470757}
 --- !u!1 &2093600638
 GameObject:
   m_ObjectHideFlags: 0

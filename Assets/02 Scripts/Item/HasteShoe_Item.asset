@@ -21,4 +21,4 @@ MonoBehaviour:
   attackBonus: 0
   defenseBonus: 0
   healthBonus: 0
-  criticalChanceBonus: 55
+  criticalChanceBonus: 0.45
