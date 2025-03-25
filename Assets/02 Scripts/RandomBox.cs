@@ -43,6 +43,7 @@ public class RandomBox : MonoBehaviour
 
         // 획득할 아이템 개수 결정
         int itemCount = Random.Range(minItemCount, maxItemCount + 1);
+        bool anyItemAdded = false;
 
         // 지정된 개수만큼 아이템 획득
         for (int i = 0; i < itemCount; i++)
@@ -61,12 +62,23 @@ public class RandomBox : MonoBehaviour
                 if (added)
                 {
                     Debug.Log($"획득: {selectedItem.ItemName} x{amount}");
+                    anyItemAdded = true;
                 }
                 else
                 {
                     Debug.LogWarning($"인벤토리가 가득 차서 {selectedItem.ItemName}을(를) 획득할 수 없습니다.");
                     break;
                 }
+            }
+        }
+
+        // 아이템을 얻었으면 UI 갱신 요청
+        if (anyItemAdded && UIManager.Instance != null && UIManager.Instance.Inventory != null)
+        {
+            // 인벤토리가 활성화되어 있으면 슬롯만 업데이트, 아니면 전체 새로고침은 Character.OnInventoryChanged에서 처리됨
+            if (UIManager.Instance.Inventory.gameObject.activeSelf)
+            {
+                UIManager.Instance.Inventory.UpdateInventoryUI();
             }
         }
     }

@@ -10,15 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4726f8199c3c316419fc948daad980f7, type: 3}
-  m_Name: Flame_Dagger_Item
+  m_Name: RingofDeath_Item
   m_EditorClassIdentifier: 
-  itemName: Flame Dagger
-  itemSprite: {fileID: 21300000, guid: 888ea8e4022eb18409c65a290d82d788, type: 3}
-  description: "\uBD88\uC758 \uB2E8\uB3C4"
-  itemType: 0
+  itemName: Ring of Death
+  itemSprite: {fileID: 21300000, guid: fd5c3ada9b8cb574c9b223a5ade8096f, type: 3}
+  description: "\uC8FD\uC74C\uC758 \uBC18\uC9C0"
+  itemType: 2
   isStackable: 0
   maxStack: 99
-  attackBonus: 30
+  attackBonus: 0
   defenseBonus: 0
-  healthBonus: 10
-  criticalChanceBonus: 5
+  healthBonus: 0
+  criticalChanceBonus: 30

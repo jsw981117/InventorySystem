@@ -10,15 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4726f8199c3c316419fc948daad980f7, type: 3}
-  m_Name: Flame_Dagger_Item
+  m_Name: Iron_Sword_Item
   m_EditorClassIdentifier: 
-  itemName: Flame Dagger
-  itemSprite: {fileID: 21300000, guid: 888ea8e4022eb18409c65a290d82d788, type: 3}
-  description: "\uBD88\uC758 \uB2E8\uB3C4"
+  itemName: Iron Sword
+  itemSprite: {fileID: 21300000, guid: 67e06b41cdf2e7d4aaa5f7397d239984, type: 3}
+  description: "\uAC15\uCCA0\uAC80"
   itemType: 0
   isStackable: 0
   maxStack: 99
-  attackBonus: 30
-  defenseBonus: 0
-  healthBonus: 10
-  criticalChanceBonus: 5
+  attackBonus: 15
+  defenseBonus: 20
+  healthBonus: 25
+  criticalChanceBonus: 0

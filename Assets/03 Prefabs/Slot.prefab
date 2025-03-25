@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 8203414574343391104}
   - component: {fileID: 1974821239711145411}
   m_Layer: 5
-  m_Name: Image
+  m_Name: CountBox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -163,7 +163,7 @@ GameObject:
   - component: {fileID: 6730465965592613411}
   - component: {fileID: 8249996882173837778}
   m_Layer: 5
-  m_Name: Text (TMP)
+  m_Name: CountTxt
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

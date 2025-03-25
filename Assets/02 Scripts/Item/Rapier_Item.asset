@@ -10,15 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4726f8199c3c316419fc948daad980f7, type: 3}
-  m_Name: Flame_Dagger_Item
+  m_Name: Rapier_Item
   m_EditorClassIdentifier: 
-  itemName: Flame Dagger
-  itemSprite: {fileID: 21300000, guid: 888ea8e4022eb18409c65a290d82d788, type: 3}
-  description: "\uBD88\uC758 \uB2E8\uB3C4"
+  itemName: Rapier of Knight
+  itemSprite: {fileID: 21300000, guid: 70516b5b59d87f74698bc66195d9377f, type: 3}
+  description: "\uAE30\uC0AC\uC758 \uB808\uC774\uD53C\uC5B4"
   itemType: 0
   isStackable: 0
   maxStack: 99
-  attackBonus: 30
+  attackBonus: 25
   defenseBonus: 0
-  healthBonus: 10
-  criticalChanceBonus: 5
+  healthBonus: 0
+  criticalChanceBonus: 25

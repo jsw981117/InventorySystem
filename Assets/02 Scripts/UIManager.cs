@@ -111,7 +111,18 @@ public class UIManager : MonoBehaviour
     {
         if (Inventory != null && character == playerCharacter)
         {
-            Inventory.RefreshInventory();
+            if (Inventory.gameObject.activeSelf)
+            {
+                // 인벤토리가 현재 표시중이면 슬롯만 업데이트
+                Inventory.UpdateInventoryUI();
+            }
+            else
+            {
+                // 인벤토리가 숨겨져 있으면 다음에 표시될 때 새로고침하도록 예약
+                Inventory.RefreshInventory();
+            }
+
+            Debug.Log("인벤토리 변경 이벤트 처리됨");
         }
     }
 

@@ -10,15 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4726f8199c3c316419fc948daad980f7, type: 3}
-  m_Name: Flame_Dagger_Item
+  m_Name: WizardHat_Item
   m_EditorClassIdentifier: 
-  itemName: Flame Dagger
-  itemSprite: {fileID: 21300000, guid: 888ea8e4022eb18409c65a290d82d788, type: 3}
-  description: "\uBD88\uC758 \uB2E8\uB3C4"
-  itemType: 0
+  itemName: Wizard Hat
+  itemSprite: {fileID: 21300000, guid: 852463d7dbbe81f4f883d8817c8a43b5, type: 3}
+  description: "\uB9C8\uBC95\uC0AC\uC758 \uBAA8\uC790"
+  itemType: 2
   isStackable: 0
   maxStack: 99
   attackBonus: 30
   defenseBonus: 0
-  healthBonus: 10
-  criticalChanceBonus: 5
+  healthBonus: 0
+  criticalChanceBonus: 15

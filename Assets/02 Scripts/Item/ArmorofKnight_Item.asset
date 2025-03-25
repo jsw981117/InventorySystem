@@ -10,15 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4726f8199c3c316419fc948daad980f7, type: 3}
-  m_Name: Flame_Dagger_Item
+  m_Name: ArmorofKnight_Item
   m_EditorClassIdentifier: 
-  itemName: Flame Dagger
-  itemSprite: {fileID: 21300000, guid: 888ea8e4022eb18409c65a290d82d788, type: 3}
-  description: "\uBD88\uC758 \uB2E8\uB3C4"
-  itemType: 0
+  itemName: Armor of Knight
+  itemSprite: {fileID: 21300000, guid: e89cb970e3e1f924aa0c41229ed6d7c5, type: 3}
+  description: "\uAE30\uC0AC\uC758 \uAC11\uC637"
+  itemType: 1
   isStackable: 0
   maxStack: 99
-  attackBonus: 30
-  defenseBonus: 0
-  healthBonus: 10
-  criticalChanceBonus: 5
+  attackBonus: 0
+  defenseBonus: 75
+  healthBonus: 75
+  criticalChanceBonus: 15
