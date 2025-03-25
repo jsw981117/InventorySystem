@@ -110,4 +110,16 @@ public class Item
 
         return info;
     }
+
+    public void SetAmount(int newAmount)
+    {
+        if (IsStackable)
+        {
+            amount = Mathf.Clamp(newAmount, 0, MaxStack);
+        }
+        else
+        {
+            amount = 1; // 스택 불가능한 아이템은 항상 1개
+        }
+    }
 }

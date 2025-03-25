@@ -113,8 +113,8 @@ public class UIManager : MonoBehaviour
         {
             if (Inventory.gameObject.activeSelf)
             {
-                // 인벤토리가 현재 표시중이면 슬롯만 업데이트
-                Inventory.UpdateInventoryUI();
+                // 인벤토리가 현재 표시중이면 강제 새로고침
+                Inventory.ForceRefreshNow();
             }
             else
             {

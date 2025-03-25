@@ -28,7 +28,7 @@ public class Character : MonoBehaviour
 
     // 인벤토리 시스템
     private List<InventoryItem> inventory = new List<InventoryItem>();
-    private const int MAX_INVENTORY_SIZE = 20;
+    private const int MAX_INVENTORY_SIZE = 120;
 
     // 상태 변경 이벤트
     [HideInInspector] public InventoryChangedEvent OnInventoryChanged = new InventoryChangedEvent();
@@ -189,11 +189,16 @@ public class Character : MonoBehaviour
                     int amountToAdd = Mathf.Min(amount, invItem.MaxStack - invItem.Amount);
                     invItem.AddAmount(amountToAdd);
 
+                    // 중요: Item 객체의 수량도 동기화
+                    invItem.Item.SetAmount(invItem.Amount);
+
                     // 추가 후 남은 수량이 있다면 새 슬롯에 추가
                     int remaining = amount - amountToAdd;
                     if (remaining > 0 && !IsInventoryFull)
                     {
                         Item newItem = new Item(itemData);
+                        // 중요: 새 아이템의 수량 설정
+                        newItem.SetAmount(remaining);
                         InventoryItem newInvItem = new InventoryItem(newItem, remaining);
                         AddItemToInventory(newInvItem);
                     }
@@ -207,6 +212,8 @@ public class Character : MonoBehaviour
 
         // 같은 종류의 아이템이 없거나 중첩 불가능한 경우 새 슬롯에 추가
         Item item = new Item(itemData);
+        // 중요: 아이템의 수량 설정
+        item.SetAmount(amount);
         InventoryItem inventoryItem = new InventoryItem(item, amount);
         AddItemToInventory(inventoryItem);
 

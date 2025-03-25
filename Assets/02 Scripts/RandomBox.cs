@@ -72,13 +72,14 @@ public class RandomBox : MonoBehaviour
             }
         }
 
-        // 아이템을 얻었으면 UI 갱신 요청
+        // 아이템이 추가되었고 인벤토리 UI가 현재 표시 중이면 강제 새로고침
         if (anyItemAdded && UIManager.Instance != null && UIManager.Instance.Inventory != null)
         {
-            // 인벤토리가 활성화되어 있으면 슬롯만 업데이트, 아니면 전체 새로고침은 Character.OnInventoryChanged에서 처리됨
             if (UIManager.Instance.Inventory.gameObject.activeSelf)
             {
-                UIManager.Instance.Inventory.UpdateInventoryUI();
+                // 인벤토리 UI가 열려있는 상태면 강제로 새로고침
+                UIManager.Instance.Inventory.ForceRefreshNow();
+                Debug.Log("인벤토리 UI 강제 새로고침 완료");
             }
         }
     }

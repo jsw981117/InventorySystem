@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,6 +10,7 @@ public class UIInventory : MonoBehaviour
     [SerializeField] private UISlot slotPrefab; // UISlot 프리팹 참조
     [SerializeField] private Transform slotsParent; // 슬롯들의 부모 Transform (ScrollView의 Content)
     [SerializeField] private ScrollRect scrollView; // 스크롤뷰 참조
+    [SerializeField] private TextMeshProUGUI currentSlotCount;
 
     private List<UISlot> slots = new List<UISlot>(); // UISlot 리스트
 
@@ -54,16 +56,9 @@ public class UIInventory : MonoBehaviour
         Character playerCharacter = GameManager.Instance?.PlayerCharacter;
         if (playerCharacter != null)
         {
-            // 아이템 목록을 가져와 슬롯으로 변환
-            List<Item> characterItems = new List<Item>();
-
-            // Inventory에서 아이템 가져오기
-            foreach (var invItem in playerCharacter.Inventory)
-            {
-                characterItems.Add(invItem.Item);
-            }
-
-            int itemCount = characterItems.Count;
+            // 인벤토리 아이템 목록 가져오기
+            var inventoryItems = playerCharacter.Inventory;
+            int itemCount = inventoryItems.Count;
 
             // 최소한 빈 슬롯 하나는 표시
             if (itemCount == 0)
@@ -71,16 +66,27 @@ public class UIInventory : MonoBehaviour
 
             CreateSlots(itemCount);
 
-            // 아이템 정보로 슬롯 채우기
-            for (int i = 0; i < characterItems.Count; i++)
+            // 아이템 정보로 슬롯 채우기 - 여기가 중요한 부분
+            for (int i = 0; i < inventoryItems.Count; i++)
             {
                 if (i < slots.Count)
                 {
-                    slots[i].SetItem(characterItems[i]);
+                    var inventoryItem = inventoryItems[i];
+                    Item item = inventoryItem.Item;
+
+                    // 중요: 여기서 아이템의 수량을 명시적으로 설정
+                    if (item.IsStackable)
+                    {
+                        // 아이템에 인벤토리아이템의 수량을 직접 설정
+                        item.SetAmount(inventoryItem.Amount);
+                    }
+
+                    // 슬롯에 아이템 설정
+                    slots[i].SetItem(item);
                 }
             }
 
-            Debug.Log($"인벤토리 UI 초기화 완료 - 아이템 {characterItems.Count}개");
+            Debug.Log($"인벤토리 UI 초기화 완료 - 아이템 {inventoryItems.Count}개");
         }
         else
         {
@@ -88,6 +94,7 @@ public class UIInventory : MonoBehaviour
             CreateSlots(5);
             Debug.LogWarning("캐릭터를 찾을 수 없어 기본 슬롯 5개만 생성합니다.");
         }
+        UpdateSlotCountText();
     }
 
     // 지정된 개수만큼 슬롯 생성
@@ -104,7 +111,7 @@ public class UIInventory : MonoBehaviour
             // 리스트에 추가
             slots.Add(newSlot);
         }
-
+        UpdateSlotCountText();
         Debug.Log($"인벤토리 초기화 완료: {count}개의 슬롯 생성됨");
     }
 
@@ -120,6 +127,7 @@ public class UIInventory : MonoBehaviour
 
         // 리스트 초기화
         slots.Clear();
+        UpdateSlotCountText();
     }
 
     void OnClickBackBtn()
@@ -228,5 +236,82 @@ public class UIInventory : MonoBehaviour
         }
 
         Debug.Log($"인벤토리 UI 업데이트 완료 - 아이템 {characterItems.Count}개");
+    }
+
+    public void ForceRefreshNow()
+    {
+        // 플레이어 캐릭터 참조 확인
+        Character playerCharacter = GameManager.Instance?.PlayerCharacter;
+        if (playerCharacter == null)
+            return;
+
+        // 현재 슬롯 상태 저장 (스크롤 위치 등을 유지하기 위함)
+        Vector2 scrollPosition = Vector2.zero;
+        if (scrollView != null)
+        {
+            scrollPosition = scrollView.normalizedPosition;
+        }
+
+        // 슬롯 초기화 (기존 슬롯 유지)
+        foreach (UISlot slot in slots)
+        {
+            if (slot != null)
+            {
+                slot.ClearSlot();
+            }
+        }
+
+        // 인벤토리 아이템으로 슬롯 채우기
+        var inventoryItems = playerCharacter.Inventory;
+        int neededSlots = Mathf.Max(inventoryItems.Count, slots.Count);
+
+        // 슬롯이 부족하면 추가
+        if (slots.Count < neededSlots)
+        {
+            int slotsToAdd = neededSlots - slots.Count;
+            for (int i = 0; i < slotsToAdd; i++)
+            {
+                UISlot newSlot = Instantiate(slotPrefab, slotsParent);
+                newSlot.name = $"Slot_{slots.Count}";
+                newSlot.InitSlot(slots.Count);
+                slots.Add(newSlot);
+            }
+        }
+
+        // 아이템 정보로 슬롯 채우기
+        for (int i = 0; i < inventoryItems.Count; i++)
+        {
+            if (i < slots.Count)
+            {
+                var inventoryItem = inventoryItems[i];
+                Item item = inventoryItem.Item;
+
+                // 아이템 수량 동기화
+                if (item.IsStackable)
+                {
+                    item.SetAmount(inventoryItem.Amount);
+                }
+
+                // 슬롯에 아이템 설정
+                slots[i].SetItem(item);
+            }
+        }
+
+        // 스크롤 위치 복원
+        if (scrollView != null)
+        {
+            scrollView.normalizedPosition = scrollPosition;
+        }
+
+        Debug.Log($"인벤토리 UI 강제 새로고침 완료 - 아이템 {inventoryItems.Count}개, 슬롯 {slots.Count}개");
+        UpdateSlotCountText();
+    }
+
+    private void UpdateSlotCountText()
+    {
+        if (currentSlotCount != null)
+        {
+            currentSlotCount.text = slots.Count.ToString();
+        }
     }
 }
